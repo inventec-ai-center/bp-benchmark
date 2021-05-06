@@ -1,0 +1,13 @@
+CODE = code
+EXC_USER = $(shell whoami)
+IMAGE ?= bp
+NAMESPACE ?= bp-algorithm
+REGISTRY ?= 60.250.28.238:20432
+VERSION ?= ${shell git describe --always }
+
+export CODE
+export EXC_USER
+export IMAGE
+export NAMESPACE
+export REGISTRY
+export VERSION
