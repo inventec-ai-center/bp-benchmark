@@ -1,0 +1,15 @@
+artifact_uri: /workspace/bp-4/mlruns/1/7194b6677b4d4d8a8cceb0b8c0d3aa19/artifacts
+end_time: 1619056271595
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 7194b6677b4d4d8a8cceb0b8c0d3aa19
+run_uuid: 7194b6677b4d4d8a8cceb0b8c0d3aa19
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1619056063578
+status: 3
+tags: []
+user_id: root
