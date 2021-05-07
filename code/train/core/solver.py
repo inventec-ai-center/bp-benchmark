@@ -21,19 +21,15 @@ from core.models.cnn1d import CNNVanilla
 
 # Load loaders
 import copy
-from core.loaders.mimicv1 import MIMICv1
 from core.loaders.passive_mimicv1 import PassiveMIMICv1
 
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold
 
-from core import signal_processing
-from core.signal_processing.clean import filtering
-from core.signal_processing.extract import PPG, ECG, get_ptt, align_peaks_ecg_ppg
-from core.signal_processing.utils import global_norm, global_denorm, get_bp_labels, tic, toc
+# Load utilies
+from core.utils import global_denorm, str2bool
 
-from core.utils import str2bool
 class Solver:
     DEFAULTS = {}   
     def __init__(self, config):
@@ -87,7 +83,7 @@ class Solver:
         self._subjects = np.array(["484","225","437","216","417","284","438","471","213","439","237","240","446","281",
                                     "476","224","226","427","482","485","443","276","452","472","230"])
         self._xsubjectfold = {}
-        mimicv1_meta = json.load(open(self.loader_params["db_path"]+"../mimic-1.0.0-meta.json"))
+        mimicv1_meta = json.load(open(PATHS["DB_PATH"] + self.loader_params["db_path"]+"../mimic-1.0.0-meta.json"))
 
         anno = []
         for s in self._subjects:

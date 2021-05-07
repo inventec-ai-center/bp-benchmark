@@ -11,7 +11,7 @@ import argparse
 import numpy as np 
 # Local modules
 import sys
-PATHS = json.load(open("../../paths.json"))
+PATHS = json.load(open("./paths.json"))
 for k in PATHS: 
     sys.path.append(PATHS[k])
 from core.solver import Solver
