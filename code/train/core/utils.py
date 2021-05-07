@@ -9,7 +9,6 @@ import torch.nn
 import random
 import numpy as np
 import mlflow as mf
-from core.signal_processing.utils import global_denorm
 PATHS = json.load(open("../../paths.json"))
     
 def str2bool(v):
@@ -135,3 +134,22 @@ def _categorized(sbp_value):
     elif (sbp_value>228) and (sbp_value<=252): return 7
     elif (sbp_value>252) and (sbp_value<=276): return 8
     else: return 9
+
+# http://www.bloodpressureuk.org/BloodPressureandyou/Thebasics/Bloodpressurechart
+def global_norm(x, signal_type): 
+    if signal_type == "sbp": (x_min, x_max) = (60, 200)   # mmHg
+    elif signal_type == "dbp": (x_min, x_max) = (30, 110)   # mmHg
+    elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
+    else: return None
+
+    # Return values normalized between 0 and 1
+    return (x - x_min) / (x_max - x_min)
+    
+def global_denorm(x, signal_type):
+    if signal_type == "sbp": (x_min, x_max) = (60, 200)   # mmHg
+    elif signal_type == "dbp": (x_min, x_max) = (30, 110)   # mmHg
+    elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
+    else: return None
+
+    # Return values normalized between 0 and 1
+    return x * (x_max-x_min) + x_min
