@@ -29,7 +29,7 @@ class PassiveMIMICv1(Dataset):
     _cat_features = ["hod", "gender"]
     _sig_features = ["ecg", "ppg", "apg", "vpg","cycles","cycle_stats","cycle_mean"]
     _cal_pool_size = 10
-    PATHS = json.load(open("../../paths.json"))
+    PATHS = json.load(open("./paths.json"))
 
     def __init__(self, anno_data, features, target,
                  split_type, subjects, folds,
