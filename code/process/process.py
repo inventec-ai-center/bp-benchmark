@@ -9,7 +9,7 @@ import json
 from tqdm import tqdm
 
 import sys
-PATHS = json.load(open("../../paths.json"))
+PATHS = json.load(open("./paths.json"))
 for k in PATHS:  sys.path.append(PATHS[k])
 import core.signal_processing
 from core.signal_processing.clean import filtering, SQI
