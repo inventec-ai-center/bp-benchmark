@@ -9,7 +9,7 @@ import torch.nn
 import random
 import numpy as np
 import mlflow as mf
-PATHS = json.load(open("../../paths.json"))
+PATHS = json.load(open("./paths.json"))
     
 def str2bool(v):
     if isinstance(v, bool): return v

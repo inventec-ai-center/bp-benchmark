@@ -22,13 +22,13 @@ os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 
 
 
-DEFAULT_CONF_PATH = "core/config/default_config.json"
+DEFAULT_CONF_PATH = "core/config/mlpvanilla-lr-ptt-allfeat_0134.json"
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
     # general config
-    parser.add_argument("--config_file", type=str, help="Path for the config file", default=DEFAULT_CONF_PATH, required=True) 
+    parser.add_argument("--config_file", type=str, help="Path for the config file", default=DEFAULT_CONF_PATH) 
     parser.add_argument('--gpu_id', type=str, default="")
     parser.add_argument("--debug", type=str2bool, default=False)
 

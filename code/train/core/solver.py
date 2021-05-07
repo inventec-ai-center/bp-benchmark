@@ -1,7 +1,7 @@
 import json
 import sys
 import os 
-PATHS = json.load(open("../../paths.json"))
+PATHS = json.load(open("./paths.json"))
 for k in PATHS: 
     sys.path.append(PATHS[k])
 import mlflow as mf
@@ -34,8 +34,9 @@ class Solver:
     DEFAULTS = {}   
     def __init__(self, config):
         self.__dict__.update(self.DEFAULTS, **config)
-        self.model_cache_path = "../../model_cache/"
+        self.model_cache_path = "./model_cache/"
         self.config = config
+        self.DATAROOT = PATHS["DB_PATH"] + self.loader_params["db_path"]
         self._load_mimicv1_csv()
         
         # Set default values for legacy experiments
@@ -83,12 +84,12 @@ class Solver:
         self._subjects = np.array(["484","225","437","216","417","284","438","471","213","439","237","240","446","281",
                                     "476","224","226","427","482","485","443","276","452","472","230"])
         self._xsubjectfold = {}
-        mimicv1_meta = json.load(open(PATHS["DB_PATH"] + self.loader_params["db_path"]+"../mimic-1.0.0-meta.json"))
+        mimicv1_meta = json.load(open(self.DATAROOT + "../mimic-1.0.0-meta.json"))
 
         anno = []
         for s in self._subjects:
             # Load the .csv
-            df = pd.read_csv(self.loader_params["db_path"]+"{}.csv".format(s))  
+            df = pd.read_csv(self.DATAROOT + "{}.csv".format(s))  
             # Apply filtering over the rows, the following thresholds (obtained through eye-balling)
             mask = (df.sbp_std < 10) \
                     & ~(pd.isnull(df.ptt)) \
