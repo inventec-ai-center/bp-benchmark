@@ -25,7 +25,7 @@ def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_path", "-c", type=str, default=DEFAULT_CONF_PATH,
                         help="path to the config file")
-    parser.add_argument("--db_path", default="../../datasets/mimic-database-1.0.0/") 
+    parser.add_argument("--db_path", default="../../datasets/origin/") 
 
     return parser
 
