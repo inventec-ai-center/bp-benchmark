@@ -1,1 +1,24 @@
-{"root_dir": "automatic", "model_dir": "models/", "sample_dir": "samples/", "log_dir": "logs/", "N_fold": 5, "random_state": 100, "model_type": "mlp_vanilla", "db_name": "mimicv1", "model_params": {"N_epoch": 20, "batch_size": 256, "n_layers": 1, "dropout_prob": 0.5, "hidden_size": 256, "lr": 0.001, "lr_cal": 0.0001, "N_epoch_calibration": 20, "N_cal_points": 10, "input_size": 92, "output_size": 1, "use_scheduler": "False", "sample_step": 1, "model_save_step": 1}, "loader_params": {"db_path": "anno/", "features": "ptt,hr,ppg_histogram_up,ppg_histogram_down,vpg_histogram_up,vpg_histogram_down,apg_histogram_up,apg_histogram_down,ppg_fft_peaks_heights,ppg_fft_peaks_neighbor_avgs,vpg_fft_peaks_heights,vpg_fft_peaks_neighbor_avgs,apg_fft_peaks_heights,apg_fft_peaks_neighbor_avgs,usdc,dsdc", "target": "sbp"}, "exp_name": "MLPVanilla", "run_name": "mlpvanilla-lr-ptt-allfeat_0134"}
+{"dataset": {
+    "data_path": "../../datasets/processed_data/"
+    },
+ "root_dir": "automatic", 
+ "model_dir": "models/", 
+ "sample_dir": "samples/", 
+ "log_dir": "logs/", 
+ "N_fold": 5, 
+ "random_state": 100, 
+ "model_type": "mlp_vanilla", 
+ "db_name": "mimicv1", 
+ "model_params": {
+     "N_epoch": 20, "batch_size": 256, "n_layers": 1, "dropout_prob": 0.5, 
+     "hidden_size": 256, "lr": 0.001, "lr_cal": 0.0001, "N_epoch_calibration": 20, 
+     "N_cal_points": 10, "input_size": 92, "output_size": 1, "use_scheduler": "False", 
+     "sample_step": 1, "model_save_step": 1
+     }, 
+ "loader_params": {
+     "db_path": "anno/", "features": "ptt,hr,ppg_histogram_up,ppg_histogram_down,vpg_histogram_up,vpg_histogram_down,apg_histogram_up,apg_histogram_down,ppg_fft_peaks_heights,ppg_fft_peaks_neighbor_avgs,vpg_fft_peaks_heights,vpg_fft_peaks_neighbor_avgs,apg_fft_peaks_heights,apg_fft_peaks_neighbor_avgs,usdc,dsdc", 
+     "target": "sbp"
+     }, 
+ "exp_name": "MLPVanilla", 
+ "run_name": "mlpvanilla-lr-ptt-allfeat_0134"
+}

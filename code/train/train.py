@@ -29,6 +29,7 @@ def get_parser():
     parser = argparse.ArgumentParser()
     # general config
     parser.add_argument("--config_file", type=str, help="Path for the config file", default=DEFAULT_CONF_PATH) 
+    parser.add_argument("--db_path", default="../../datasets/origin/") 
     parser.add_argument('--gpu_id', type=str, default="")
     parser.add_argument("--debug", type=str2bool, default=False)
 

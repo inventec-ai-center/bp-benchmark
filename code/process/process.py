@@ -255,8 +255,8 @@ def main(args):
     generate_anno(args.db_path+"raw/", args.output_path, allmeta)
 
 
-    df = load_mimicv1_csv(args.db_path)
-    signal_paths = df.signal_path.values
+    df = load_mimicv1_csv(args.output_path)
+    signal_paths = df.signal_path.values    
     
     for path in tqdm(signal_paths):
         output = extract_signal_features(path, args.n_sample, args.n_std, args.tolerance) 
