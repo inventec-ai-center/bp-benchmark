@@ -12,9 +12,10 @@ import sys
 PATHS = json.load(open("./paths.json"))
 for k in PATHS:  sys.path.append(PATHS[k])
 import core.signal_processing
+from core.signal_processing.parser import load_mimicv1_csv
 from core.signal_processing.clean import filtering, SQI
 from core.signal_processing.extract import PPG, ECG, get_ptt, align_peaks_ecg_ppg
-from core.signal_processing.utils import global_norm, global_denorm, get_bp_labels
+from core.signal_processing.utils import global_norm, global_denorm, get_bp_labels, waveform_norm
 
 import argparse
 
@@ -26,6 +27,11 @@ def get_parser():
     parser.add_argument("--config_path", "-c", type=str, default=DEFAULT_CONF_PATH,
                         help="path to the config file")
     parser.add_argument("--db_path", default="../../datasets/origin/") 
+    parser.add_argument("--output_path", default="../../datasets/processed_data/")
+    parser.add_argument('--n_sample', type=int, default=10)
+    parser.add_argument('--n_std', type=float, default=1)
+    parser.add_argument('--tolerance', type=float, default=0.8)
+
 
     return parser
 
@@ -80,7 +86,7 @@ def get_add_feature_cols():
             add_cols.append(item+"_{}".format(itr))                    
     return add_cols
 
-def generate_anno(db_path, allmeta, fs=125, ma_window_size=100, is_flat_threshold=0.5):
+def generate_anno(db_path, processed_path, allmeta, fs=125, ma_window_size=100, is_flat_threshold=0.5):
     # Names of additional hand-engineered features
     add_features = ["hr","p2p","ppg_histogram_up","ppg_histogram_down","vpg_histogram_up","vpg_histogram_down",
                     "apg_histogram_up","apg_histogram_down","ppg_fft_peaks_heights","ppg_fft_peaks_neighbor_avgs","vpg_fft_peaks_heights",
@@ -162,8 +168,10 @@ def generate_anno(db_path, allmeta, fs=125, ma_window_size=100, is_flat_threshol
                     output_signal = {"ppg":c_ppg.data, "ecg":c_ecg.data, "abp":c_abp}
                     
                     
-                    output_signal_path = db_path.replace("raw","processed") + "{}-{}-{:0>5}_{}_{}.pkl".format(s, rec, itr, base_date, base_time)   
-                    os.makedirs(db_path.replace("raw","processed"), exist_ok=True)                 
+                    # output_signal_path = db_path.replace("raw","processed") + "{}-{}-{:0>5}_{}_{}.pkl".format(s, rec, itr, base_date, base_time)   
+                    output_signal_path = f"{processed_path}/processed/" + "{}-{}-{:0>5}_{}_{}.pkl".format(s, rec, itr, base_date, base_time) 
+                    # os.makedirs(db_path.replace("raw","processed"), exist_ok=True) 
+                    os.makedirs(f"{processed_path}/processed/", exist_ok=True)                 
                     pkl.dump(output_signal, open(output_signal_path, "wb"))
                                         
                     row = {
@@ -203,9 +211,40 @@ def generate_anno(db_path, allmeta, fs=125, ma_window_size=100, is_flat_threshol
                     subject_df = subject_df.append(row, ignore_index=True)
                 
         if subject_df.shape[0] > 0:
-            save_path = db_path.replace("raw","anno")+"/{:0>3}.csv".format(s)
-            os.makedirs(db_path.replace("raw","anno"), exist_ok=True)  
+            # save_path = db_path.replace("raw","anno")+"/{:0>3}.csv".format(s)
+            # os.makedirs(db_path.replace("raw","anno"), exist_ok=True)  
+            save_path = f"{processed_path}/anno/" + "{:0>3}.csv".format(s)
+            os.makedirs(f"{processed_path}/anno/", exist_ok=True)  
             subject_df.to_csv(save_path, index=False)
+
+def extract_signal_features(signal_path, n_sample, n_std, tolerance):
+    '''
+    signal_path is a string pointing to a pickle-dictionary object containing ecg, ppg, and abp signals
+    '''
+    data = pd.read_pickle(signal_path)
+    output = {}
+    
+    output["ecg"] = waveform_norm(data["ecg"])
+    output["ppg"] = waveform_norm(data["ppg"])
+    output["abp"] = data["abp"]
+    
+    ppg = PPG(data["ppg"], fs=125)
+    ecg = ECG(data["ecg"], fs=125)
+    
+    # Derivative features
+    output["apg"] = waveform_norm(ppg.apg())
+    output["vpg"] = waveform_norm(ppg.vpg())
+    
+    # Clean signals
+    cycles = ppg.clean_cycles(n_sample=n_sample, n_std=n_std, tolerance=tolerance)
+    output["cycles"] = cycles
+    
+    # For the cycle stats, we can use larger n_std and set the tolerance to 1 since we are going to use PCA
+    # Prominent noises are treated as features, otherwise they are ignore by PCA
+    cycle_stats = ppg.cycles_stat_representation(n_pca_components=5, n_std=2, tolerance=1.0)
+    output["cycle_stats"] = cycle_stats
+    
+    return output
 
 
 def main(args):
@@ -213,7 +252,18 @@ def main(args):
     allmeta = json.load(open(args.db_path + "mimic-1.0.0-meta.json","r"))
     
     # Generate annotations as .csv
-    generate_anno(args.db_path+"raw/", allmeta)
+    generate_anno(args.db_path+"raw/", args.output_path, allmeta)
+
+
+    df = load_mimicv1_csv(args.db_path)
+    signal_paths = df.signal_path.values
+    
+    for path in tqdm(signal_paths):
+        output = extract_signal_features(path, args.n_sample, args.n_std, args.tolerance) 
+        os.makedirs(f"{args.output_path}/extracted/", exist_ok=True)        
+        pkl.dump(output, open(f"{args.output_path}/extracted/" + os.path.basename(path), "wb"))
+
+
 
 
 if __name__ == '__main__':
