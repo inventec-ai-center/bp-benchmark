@@ -27,7 +27,7 @@ def get_parser():
     parser.add_argument("--config_path", "-c", type=str, default=DEFAULT_CONF_PATH,
                         help="path to the config file")
     parser.add_argument("--db_path", default="../../datasets/origin/") 
-    parser.add_argument("--output_path", default="../../datasets/processed_data/")
+    parser.add_argument("--output_path", default="../../processed_data/processed_origin/")
     parser.add_argument('--n_sample', type=int, default=10)
     parser.add_argument('--n_std', type=float, default=1)
     parser.add_argument('--tolerance', type=float, default=0.8)

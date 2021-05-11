@@ -1,5 +1,5 @@
 {"dataset": {
-    "data_path": "../../datasets/processed_data/"
+    "data_path": "../../processed_data/processed_origin/"
     },
  "root_dir": "automatic", 
  "model_dir": "models/", 
