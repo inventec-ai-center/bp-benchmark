@@ -250,7 +250,7 @@ def extract_signal_features(signal_path, n_sample, n_std, tolerance):
 def main(args):
     # Load mimicv1's metadata (scrapped from https://physionet.org/files/mimicdb/1.0.0/mimic-index.shtml)   
     allmeta = json.load(open(args.db_path + "mimic-1.0.0-meta.json","r"))
-    
+    json.dump(allmeta, open(args.output_path + "mimic-1.0.0-meta.json", "w"))
     # Generate annotations as .csv
     generate_anno(args.db_path+"raw/", args.output_path, allmeta)
 
