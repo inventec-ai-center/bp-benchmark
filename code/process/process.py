@@ -115,7 +115,7 @@ def generate_anno(db_path, processed_path, allmeta, fs=125, ma_window_size=100, 
             paths = [x[:-4] for x in glob(rec_path)]
 
             # Load the data for each of the paths
-            for path in tqdm(paths[:10]):
+            for path in tqdm(paths[:]):
                 r = wfdb.rdrecord(path)
                 
                 # Load the signal 
@@ -136,7 +136,7 @@ def generate_anno(db_path, processed_path, allmeta, fs=125, ma_window_size=100, 
                 chunk_size = (30 * fs)
                 N_chunk = ppg.shape[0] // chunk_size   
                 
-                for itr in range(2):
+                for itr in range(N_chunk):
                     start = itr * chunk_size
                     end = start + chunk_size
                     
@@ -250,6 +250,7 @@ def extract_signal_features(signal_path, n_sample, n_std, tolerance):
 def main(args):
     # Load mimicv1's metadata (scrapped from https://physionet.org/files/mimicdb/1.0.0/mimic-index.shtml)   
     allmeta = json.load(open(args.db_path + "mimic-1.0.0-meta.json","r"))
+    os.makedirs(args.output_path, exist_ok=True) 
     json.dump(allmeta, open(args.output_path + "mimic-1.0.0-meta.json", "w"))
     # Generate annotations as .csv
     generate_anno(args.db_path+"raw/", args.output_path, allmeta)
