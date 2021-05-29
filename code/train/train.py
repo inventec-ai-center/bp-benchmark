@@ -32,7 +32,9 @@ def get_parser():
     parser.add_argument("--db_path", default="../../processed_data/processed_origin/") 
     parser.add_argument('--gpu_id', type=str, default="")
     parser.add_argument("--debug", type=str2bool, default=False)
-
+    parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--hidden_size", type=int, default=256)
     return parser
 
 
@@ -49,6 +51,9 @@ def main(args):
         raise RuntimeError("config_file {} does not exist".format(args.config_file))
     # Load config file
     config = json.load(open(args.config_file))
+    config["model_params"]["lr"] = args.lr
+    config["model_params"]["batch_size"] = args.batch_size
+    config["model_params"]["hidden_size"] = args.hidden_size
 
     if args.debug:
         config["exp_name"] = "DEBUGGING"
