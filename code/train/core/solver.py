@@ -346,8 +346,8 @@ class Solver:
         mf.log_metric("XS_cm_cvmae", np.mean(cm_errors))
 
         print("Saving benchmark result of", self.exp_name, self.run_name)        
-        print("XS_gm_cvmae: ", np.mean(gm_errors))
-        print("XS_cm_cvmae: ", np.mean(cm_errors))
+        print("XS_gm_cvmae={:.3f}".format(np.mean(gm_errors)))
+        print("XS_cm_cvmae={:.3f}".format(np.mean(cm_errors)))
 
         testing_log["exp_name"] = self.exp_name
         testing_log["run_name"] = self.run_name
