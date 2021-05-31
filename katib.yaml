@@ -8,7 +8,7 @@ spec:
   maxTrialCount: 12
   maxFailedTrialCount: 3
   objective:
-    type: maximize
+    type: minimize
     goal: 12.0
     objectiveMetricName: XS_cm_cvmae
   algorithm:
@@ -20,8 +20,8 @@ spec:
     - name: lr
       parameterType: double
       feasibleSpace:
-        min: "1e-6"
-        max: "1e-5"
+        min: "1e-4"
+        max: "1e-3"
     - name: batch_size
       parameterType: int
       feasibleSpace:
@@ -66,7 +66,7 @@ spec:
                     volumeMounts:
                     - name: processed-data-dir
                       mountPath: /workspace/bp-algorithm/processed_data/processed_origin
-                    image: 60.250.28.238:8080/BP-Algorithm/bp-algorithm-train:latest
+                    image: 60.250.28.238:30032/bp-algorithm/bp-algorithm-train:latest
                     resources:
                       limits:
                         nvidia.com/gpu: '0'
@@ -96,7 +96,7 @@ spec:
                     volumeMounts:
                     - name: processed-data-dir
                       mountPath: /workspace/bp-algorithm/processed_data/processed_origin
-                    image: 60.250.28.238:8080/BP-Algorithm/bp-algorithm-train:latest
+                    image: 60.250.28.238:30032/bp-algorithm/bp-algorithm-train:latest
                     resources:
                       limits:
                         nvidia.com/gpu: '1'
