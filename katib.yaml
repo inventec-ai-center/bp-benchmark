@@ -66,7 +66,7 @@ spec:
                     volumeMounts:
                     - name: processed-data-dir
                       mountPath: /workspace/bp-algorithm/processed_data/processed_origin
-                    image: 60.250.28.238:30032/bp-algorithm/bp-algorithm-train:latest
+                    image: 60.250.28.238:30032/bp-algorithm/bp-train:latest
                     resources:
                       limits:
                         nvidia.com/gpu: '0'
@@ -96,7 +96,7 @@ spec:
                     volumeMounts:
                     - name: processed-data-dir
                       mountPath: /workspace/bp-algorithm/processed_data/processed_origin
-                    image: 60.250.28.238:30032/bp-algorithm/bp-algorithm-train:latest
+                    image: 60.250.28.238:30032/bp-algorithm/bp-train:latest
                     resources:
                       limits:
                         nvidia.com/gpu: '1'
