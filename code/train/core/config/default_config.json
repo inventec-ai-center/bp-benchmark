@@ -1,0 +1,22 @@
+{"dataset": {
+    "data_path": "../../processed_data/processed_origin/"
+    },
+ "root_dir": "automatic", 
+ "model_dir": "models/", 
+ "sample_dir": "samples/", 
+ "log_dir": "logs/", 
+ "N_fold": 5, 
+ "random_state": 100, 
+ "model_type": "cnn_vanilla", 
+ "db_name": "mimicv1", 
+ "model_params": {
+     "N_epoch": 50, "batch_size": 256, "n_layers": 2, 
+     "dropout_prob": 0.5, "hidden_size": 512, "lr": 0.001, 
+     "lr_cal": 0.0001, "N_epoch_calibration": 50, "N_cal_points": 1, 
+     "input_size": 3, "output_size": 1, "use_scheduler": "False", 
+     "sample_step": 1, "model_save_step": 1
+    }, 
+ "loader_params": {"db_path": "anno/", 
+                   "features": "ppg,vpg,apg", "target": "sbp"}, 
+ "exp_name": "CNNVanilla", 
+ "run_name": "cnn-signals_0080"}

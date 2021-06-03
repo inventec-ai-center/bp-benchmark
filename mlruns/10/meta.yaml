@@ -1,0 +1,4 @@
+artifact_location: /workspace/bp-algorithm/mlruns/10
+experiment_id: '10'
+lifecycle_stage: active
+name: MLPVanilla
