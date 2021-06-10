@@ -5,7 +5,7 @@
             component: ci
         spec:
           nodeSelector:
-            kubernetes.io/hostname: eevee
+            kubernetes.io/hostname: iec1-lugia
           containers:
           - name: ci-runner
             image: 60.250.28.238:30032/pokemon-center/ci_compose_runner
