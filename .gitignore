@@ -1,0 +1,13 @@
+# vs code
+.vscode
+
+# python cache 
+__pycache__
+
+# training logs
+*.log
+lightning_logs/
+mlruns/
+checkpoints/
+lightning_logs/
+multirun/
