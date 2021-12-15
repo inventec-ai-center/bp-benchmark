@@ -1,15 +1,14 @@
 import os 
 from pathlib import Path
-import sys
-print(sys.path)
-import json
 import argparse
 import torch
 import torch.nn
-import random
 import numpy as np
 import mlflow as mf
-PATHS = json.load(open("./paths.json"))
+from shutil import rmtree
+from pyampd.ampd import find_peaks
+from mlflow.tracking import MlflowClient
+from mlflow.utils.autologging_utils.safety import try_mlflow_log
     
 def str2bool(v):
     if isinstance(v, bool): return v
@@ -17,125 +16,28 @@ def str2bool(v):
     elif v.lower() in ('no', 'false', 'f', 'n', '0'): return False
     else: raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def init_mlflow(exp_name, run_name):
-    mf.set_tracking_uri(PATHS["PROJECT_PATH"] + "mlruns/")
-    mf.set_experiment(exp_name)
-    mf.start_run(run_name=run_name)
-    
-def init_dirs(config):
-    active_run = mf.active_run()
-    config["root_dir"] = PATHS["PROJECT_PATH"] + "/mlruns/{}/{}/artifacts/".format(active_run.info.experiment_id, active_run.info.run_id)
-    for item in ["model_dir","sample_dir","log_dir"]:
-        config[item] = config["root_dir"] + config[item]
-        Path(config[item]).mkdir(parents=True, exist_ok=True)
-    return config
-
 def set_device(gpu_id):
-    # Manage GPU availability
-    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
-    if gpu_id != "": 
-        torch.cuda.set_device(0)
-        
+    print(gpu_id)
+    if torch.cuda.is_available():
+        torch.cuda.set_device(int(gpu_id))
+        print("Using GPU: ", torch.cuda.current_device())
     else:
         n_threads = torch.get_num_threads()
         n_threads = min(n_threads, 8)
         torch.set_num_threads(n_threads)
         print("Using {} CPU Core".format(n_threads))
 
-class ContrastiveLoss(torch.nn.Module):
-    """
-    Contrastive loss function.
-    Based on:
-    """
+def get_nested_fold_idx(kfold):
+    for fold_test_idx in range(kfold):
+        fold_val_idx = (fold_test_idx+1)%kfold
+        fold_train_idx = [fold for fold in range(kfold) if fold not in [fold_test_idx, fold_val_idx]]
+        yield fold_train_idx, [fold_val_idx], [fold_test_idx]
 
-    def __init__(self, margin=1.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
+def get_ckpt(r):
+    ckpts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "restored_model_checkpoint")]
+    return r.info.artifact_uri, ckpts
 
-    def check_type_forward(self, in_types):
-        assert len(in_types) == 3
-
-        x0_type, x1_type, y_type = in_types
-        assert x0_type.size() == x1_type.shape
-        assert x1_type.size()[0] == y_type.shape[0]
-        assert x1_type.size()[0] > 0
-        assert x0_type.dim() == 2
-        assert x1_type.dim() == 2
-        assert y_type.dim() == 1
-
-    def forward(self, x0, x1, y):
-        y = torch.squeeze(y)
-        self.check_type_forward((x0, x1, y))
-
-        # euclidian distance
-        diff = x0 - x1
-        dist_sq = torch.sum(torch.pow(diff, 2), 1)
-        dist = torch.sqrt(dist_sq)
-
-        mdist = self.margin - dist
-        dist = torch.clamp(mdist, min=0.0)
-        loss = y * dist_sq + (1 - y) * torch.pow(dist, 2)
-        loss = torch.sum(loss) / 2.0 / x0.size()[0]
-        return loss
-
-def _get_siamese_input(batch_data):
-    batch_xdata, batch_xcat, batch_xsig, batch_y = batch_data
-    # map sbp values to categories
-    all_cat = np.array([_categorized(y) for y in batch_y])
-    # generate category dictionary
-    cat_dict = {i: np.where(all_cat == i)[0] for i in set(all_cat)}
-    
-    # for every data point, generate 1 positive example and 1 negative
-    input1, input2, labels = [], [], []
-    batch_data = list(zip(batch_xdata, batch_xcat, batch_xsig, batch_y))
-    for data in batch_data:
-        x_data, x_cat, x_sig, y = data
-        y_cat = _categorized(y)
-        # positive case
-        pos_idx = cat_dict[y_cat]
-        random.seed(100)
-        rand_idx = random.randint(0,len(pos_idx))
-        input1.append(data)
-        input2.append(batch_data[pos_idx[rand_idx]])
-        labels.append(0)
-        # negative case
-        neg_idx = [i for i in range(len(batch_data)) if i not in cat_dict[y_cat]]
-        random.seed(100)
-        rand_idx = random.randint(0,len(neg_idx))
-        input1.append(data)
-        input2.append(batch_data[neg_idx[rand_idx]])
-        labels.append(1)
-    # rearrange the data structure
-    x_data = np.vstack([data[0] for data in input1])
-    x_cat = np.vstack([data[1] for data in input1])
-    x_sig = np.vstack([data[2] for data in input1])
-    y = np.hstack([data[3] for data in input1])
-    input1 = [x_data, x_cat, x_sig, y]
-    
-    x_data = np.vstack([data[0] for data in input2])
-    x_cat = np.vstack([data[1] for data in input2])
-    x_sig = np.vstack([data[2] for data in input2])
-    y = np.hstack([data[3] for data in input2])
-    input2 = [x_data, x_cat, x_sig, y]
-    
-    labels = np.hstack(labels).reshape(-1,1)
-    return input1, input2, labels
-        
-
-def _categorized(sbp_value):
-    sbp_value = global_denorm(sbp_value, "sbp")
-    if sbp_value<=84:   return 0
-    elif (sbp_value>84) and (sbp_value<=108): return 1
-    elif (sbp_value>108) and (sbp_value<=132): return 2
-    elif (sbp_value>132) and (sbp_value<=156): return 3
-    elif (sbp_value>156) and (sbp_value<=180): return 4
-    elif (sbp_value>180) and (sbp_value<=204): return 5
-    elif (sbp_value>204) and (sbp_value<=228): return 6
-    elif (sbp_value>228) and (sbp_value<=252): return 7
-    elif (sbp_value>252) and (sbp_value<=276): return 8
-    else: return 9
-
-# http://www.bloodpressureuk.org/BloodPressureandyou/Thebasics/Bloodpressurechart
+#%% Global Normalization
 def global_norm(x, signal_type): 
     if signal_type == "sbp": (x_min, x_max) = (60, 200)   # mmHg
     elif signal_type == "dbp": (x_min, x_max) = (30, 110)   # mmHg
@@ -153,3 +55,214 @@ def global_denorm(x, signal_type):
 
     # Return values normalized between 0 and 1
     return x * (x_max-x_min) + x_min
+
+def glob_demm(x, config, type='sbp'): 
+    # sensors global max, min
+    if type=='sbp':
+        x_min, x_max = config.param_loader.sbp_min, config.param_loader.sbp_max
+    elif type=='dbp':
+        x_min, x_max = config.param_loader.dbp_min, config.param_loader.dbp_max
+    elif type=='ppg':
+        x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
+    return x * (x_max-x_min) + x_min
+
+def glob_mm(x, config, type='sbp'): 
+    # sensors global max, min
+    if type=='sbp':
+        x_min, x_max = config.param_loader.sbp_min, config.param_loader.sbp_max
+    elif type=='dbp':
+        x_min, x_max = config.param_loader.dbp_min, config.param_loader.dbp_max
+    elif type=='ppg':
+        x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
+    return (x - x_min) / (x_max - x_min)
+
+def glob_dez(x, config, type='sbp'): 
+    # sensors global max, min
+    if type=='sbp':
+        x_mean, x_std = config.param_loader.sbp_mean, config.param_loader.sbp_std
+    elif type=='dbp':
+        x_mean, x_std = config.param_loader.dbp_mean, config.param_loader.dbp_std
+    elif type=='ppg':
+        x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
+    return x * (x_std + 1e-6) + x_mean
+
+def glob_z(x, config, type='sbp'): 
+    # sensors global max, min
+    if type=='sbp':
+        x_mean, x_std = config.param_loader.sbp_mean, config.param_loader.sbp_std
+    elif type=='dbp':
+        x_mean, x_std = config.param_loader.dbp_mean, config.param_loader.dbp_std
+    elif type=='ppg':
+        x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
+    return (x - x_mean)/(x_std + 1e-6)
+
+#%% Local normalization
+def loc_mm(x,config, type='sbp'):
+    return (x - x.min())/(x.max() - x.min() + 1e-6)
+
+def loc_demm(x,config, type='sbp'):
+    return x * (x.max() - x.min() + 1e-6) + x.min()
+
+def loc_z(x,config, type='sbp'):
+    return (x - x.mean())/(x.std() + 1e-6)
+
+def loc_dez(x,config, type='sbp'):
+    return x * (x.std() + 1e-6) + x.mean()
+
+#%% Compute bps
+def compute_sp_dp(sig, fs=125, pk_th=0.6):
+    sig = sig.astype(np.float64)
+    peaks = find_peaks(sig,fs)
+    valleys = find_peaks(-sig,fs)
+    
+    sp, dp = -1 , -1
+    flag1 = False
+    flag2 = False
+    
+    ### Remove first or last if equal to 0 or len(sig)-1
+    if peaks[0] == 0:
+        peaks = peaks[1:]
+    if valleys[0] == 0:
+        valleys = valleys[1:]
+    
+    if peaks[-1] == len(sig)-1:
+        peaks = peaks[:-1]
+    if valleys[-1] == len(sig)-1:
+        valleys = valleys[:-1]
+    
+    '''
+    ### HERE WE SHOULD REMOVE THE FIRST AND LAST PEAK/VALLEY
+    if peaks[0] < valleys[0]:
+        peaks = peaks[1:]
+    else:
+        valleys = valleys[1:]
+        
+    if peaks[-1] > valleys[-1]:
+        peaks = peaks[:-1]
+    else:
+        valleys = valleys[:-1]
+    '''
+    
+    ### START AND END IN VALLEYS
+    while len(peaks)!=0 and peaks[0] < valleys[0]:
+        peaks = peaks[1:]
+    
+    while len(peaks)!=0 and peaks[-1] > valleys[-1]:
+        peaks = peaks[:-1]
+    
+    ## Remove consecutive peaks with one considerably under the other
+    new_peaks = []
+    mean_vly_amp = np.mean(sig[valleys])
+    if len(peaks)==1:
+        new_peaks = peaks
+    else:
+        # define base case:
+
+        for i in range(len(peaks)-1):
+            if sig[peaks[i]]-mean_vly_amp > (sig[peaks[i+1]]-mean_vly_amp)*pk_th:
+                new_peaks.append(peaks[i])
+                break
+
+        for j in range(i+1,len(peaks)):
+            if sig[peaks[j]]-mean_vly_amp > (sig[new_peaks[-1]]-mean_vly_amp)*pk_th:
+                new_peaks.append(peaks[j])
+                
+        if not np.array_equal(peaks,new_peaks):
+            flag1 = True
+            
+        if len(valleys)-1 != len(new_peaks):
+            flag2 = True
+            
+        if len(valleys)-1 == len(new_peaks):
+            for i in range(len(valleys)-1):
+                if not(valleys[i] < new_peaks[i] and new_peaks[i] < valleys[i+1]):
+                    flag2 = True
+        
+        
+    return np.median(sig[new_peaks]), np.median(sig[valleys]), flag1, flag2, new_peaks, valleys
+    
+def get_bp_pk_vly_mask(data):
+    _,_,_,_,pks, vlys = compute_sp_dp(data, 125, pk_th=0.6)
+
+    pk_mask = np.zeros_like(data)
+    vly_mask = np.zeros_like(data)
+    pk_mask[pks] = 1
+    vly_mask[vlys] = 1
+    
+    return np.array(pk_mask, dtype=bool), np.array(vly_mask, dtype=bool)
+
+#%% Compute statistics for normalization
+def cal_statistics(config, all_df):
+    import pandas as pd
+    all_df = pd.concat(all_df)
+    for x in ['sbp', 'dbp']:
+        config.param_loader[f'{x}_mean'] = float(all_df[x].mean())
+        config.param_loader[f'{x}_std'] = float(all_df[x].std())
+        config.param_loader[f'{x}_min'] = float(all_df[x].min())
+        config.param_loader[f'{x}_max'] = float(all_df[x].max())
+    
+    # ppg
+    config.param_loader[f'ppg_mean'] = float(np.vstack(all_df['sfppg']).mean())
+    config.param_loader[f'ppg_std'] = float(np.vstack(all_df['sfppg']).std())
+    config.param_loader[f'ppg_min'] = float(np.vstack(all_df['sfppg']).min())
+    config.param_loader[f'ppg_max'] = float(np.vstack(all_df['sfppg']).max())
+    return config
+
+#%% Compute metric
+def cal_metric(sbp_err, dbp_err, metric={}, mode='val'):
+    metric['sbp_mae'] = np.mean(np.abs(sbp_err))
+    metric['sbp_std'] = np.std(sbp_err)
+    metric['sbp_me'] = np.mean(sbp_err)
+    metric['dbp_mae'] = np.mean(np.abs(dbp_err))
+    metric['dbp_std'] = np.std(dbp_err)
+    metric['dbp_me'] = np.mean(dbp_err)
+    metric = {f'{mode}/{k}':round(v.item(),3) for k,v in metric.items()}
+    return metric
+
+#%% print/logging tools
+def print_criterion(sbps, dbps):
+    print("The percentage of SBP above 160: (0.10)", len(np.where(sbps>=160)[0])/len(sbps)) 
+    print("The percentage of SBP above 140: (0.20)", len(np.where(sbps>=140)[0])/len(sbps)) 
+    print("The percentage of SBP below 100: (0.10)", len(np.where(sbps<=100)[0])/len(sbps)) 
+    print("The percentage of DBP above 100: (0.05)", len(np.where(dbps>=100)[0])/len(dbps)) 
+    print("The percentage of DBP above 85: (0.20)", len(np.where(dbps>=85)[0])/len(dbps)) 
+    print("The percentage of DBP below 70: (0.10)", len(np.where(dbps<=70)[0])/len(dbps)) 
+    print("The percentage of DBP below 60: (0.05)", len(np.where(dbps<=60)[0])/len(dbps)) 
+
+def get_cv_logits_metrics(fold_errors, loader, pred_sbp, pred_dbp, pred_abp, 
+                            true_sbp, true_dbp, true_abp, 
+                            sbp_naive, dbp_naive, mode="val"):
+
+    fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
+    fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
+    fold_errors[f"{mode}_sbp_naive"].append([sbp_naive])
+    fold_errors[f"{mode}_sbp_pred"].append([pred_sbp])
+    fold_errors[f"{mode}_sbp_label"].append([true_sbp])
+    fold_errors[f"{mode}_dbp_naive"].append([dbp_naive])
+    fold_errors[f"{mode}_dbp_pred"].append([pred_dbp])
+    fold_errors[f"{mode}_dbp_label"].append([true_dbp])
+    fold_errors[f"{mode}_abp_true"].append([true_abp])
+    fold_errors[f"{mode}_abp_pred"].append([pred_abp])
+
+#%% mlflow
+def init_mlflow(config):
+    mf.set_tracking_uri(str(Path(config.path.mlflow_dir).absolute()))  # set up connection
+    mf.set_experiment(config.exp.exp_name)          # set the experiment
+
+def log_params_mlflow(config):
+    mf.log_params(config.get("exp"))
+    # mf.log_params(config.get("param_feature"))
+    try_mlflow_log(mf.log_params, config.get("param_preprocess"))
+    mf.log_params(config.get("param_loader"))
+    mf.log_params(config.get("param_trainer"))
+    mf.log_params(config.get("param_early_stop"))
+    if config.get("param_aug"):
+        if config.param_aug.get("filter"):
+            for k,v in dict(config.param_aug.filter).items():
+                mf.log_params({k:v})
+    # mf.log_params(config.get("param_aug"))
+    mf.log_params(config.get("param_model"))
+
+def log_config():
+    mf.log_artifact(os.path.join(os.getcwd(), 'core/config/unet_sensors_12s.yaml'))
+    # rmtree(os.path.join(os.getcwd()))
