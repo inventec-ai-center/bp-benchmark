@@ -263,6 +263,8 @@ def log_params_mlflow(config):
     # mf.log_params(config.get("param_aug"))
     mf.log_params(config.get("param_model"))
 
-def log_config():
-    mf.log_artifact(os.path.join(os.getcwd(), 'core/config/unet_sensors_12s.yaml'))
-    # rmtree(os.path.join(os.getcwd()))
+def log_config(config_path):
+    # mf.log_artifact(os.path.join(os.getcwd(), 'core/config/unet_sensors_5s.yaml'))
+    # mf.log_dict(config, "config.yaml")
+    mf.log_artifact(config_path)
+

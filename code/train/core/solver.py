@@ -1,11 +1,10 @@
 #%%
 import os
+import joblib
 from shutil import rmtree
 import pandas as pd
 import numpy as np 
-# import seaborn as sn
-import matplotlib.pyplot as plt
-from matplotlib import gridspec
+from omegaconf import OmegaConf
 
 # Load loaders
 from core.loaders.wav_loader import WavDataModule
@@ -20,8 +19,6 @@ import torch
 
 # Others
 import mlflow as mf
-import omegaconf
-import sys, tempfile, json, joblib
 import coloredlogs, logging
 from pathlib import Path
 import warnings
@@ -33,9 +30,11 @@ logger = logging.getLogger(__name__)
 #%%
 class Solver:
     DEFAULTS = {}   
-    def __init__(self, config):
+    def __init__(self, config_file):
         # Initialize
-        self.config = config 
+        self.config_file = config_file
+        self.config = OmegaConf.load(self.config_file)
+        # self.config = config 
 
     def _get_model(self, pos_weight=None, ckpt_path_abs=None):
         model = None
@@ -171,7 +170,7 @@ class Solver:
                 metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
                 logger.info(f"\t {metrics}")
                 mf.log_metrics(metrics)
-                log_config()
+                log_config(self.config_file)
 
             # Save to model directory
             os.makedirs(self.config.path.model_directory, exist_ok=True)
