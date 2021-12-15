@@ -11,3 +11,9 @@ mlruns/
 checkpoints/
 lightning_logs/
 multirun/
+
+# model
+model-*
+
+# output
+*.csv
