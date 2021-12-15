@@ -1,0 +1,76 @@
+# Paths
+path:
+    data_directory: "./datasets"
+    official_data_directory: "../../cinc2021/datasets/raw"
+    model_directory: "./${exp.model_type}"
+
+    mlflow_dir: "./mlruns" # relative path to the project root
+
+# --------------------------------------------------------------------------------------------------
+# exp settings
+exp:
+    fs: 125
+    N_fold: 5
+    random_state: 100
+    model_type: "unet1d" #"attnunet1d"
+    db: ["mimicv3"]
+    exp_name: "sensors-dataset2"
+    # run_name: "sensors-dataset2"
+    # split_type: "cross-subject"
+    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_split_cons_df.pkl' # mix_split_df.pkl
+
+# --------------------------------------------------------------------------------------------------
+# features & labels
+
+# data laading / features
+param_loader:
+    phase_match: True
+    filtered: True
+    feat: [None] #["vpg"] 
+    ppg_norm: "loc_z" # glob_mm, glob_z, loc_z, loc_mm
+    bp_norm: glob_mm # glob_mm, glob_z, loc_z, loc_mm
+
+# --------------------------------------------------------------------------------------------------
+# trainer param
+objective:
+  type: "val_mse"
+  mode: "min"
+param_trainer:
+    max_epochs: 1
+    check_val_every_n_epoch: 1
+    progress_bar_refresh_rate: 5
+    gpus: "1"
+    auto_lr_find: True
+    auto_scale_batch_size: "binsearch"
+param_early_stop:
+    monitor: ${objective.type}
+    min_delta: 0.00
+    patience: 5
+    verbose: True
+    mode: ${objective.mode}
+
+
+# --------------------------------------------------------------------------------------------------
+#  model param
+param_model:
+    N_epoch: 256
+    batch_size: 256 #256
+    # n_block: 6
+    lr: 0.001
+    input_size: 1
+    output_size: 625
+    output_channel: 32 #32 #32(before20211005)
+    layers: [2,2,2]
+    sample_step: 1
+    loss: ["mse", "peak_loss"]
+    loss_w: [1,1,1]
+
+# --------------------------------------------------------------------------------------------------
+logger:
+    param_ckpt:
+        # dirpath: ${model_directory}
+        monitor: ${objective.type}
+        filename: "{epoch:02d}-{${objective.type}:.3f}"
+        save_top_k: 1
+        mode: ${objective.mode}
+    log_lightning: False
