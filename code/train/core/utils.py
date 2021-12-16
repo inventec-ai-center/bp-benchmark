@@ -194,18 +194,22 @@ def get_bp_pk_vly_mask(data):
 #%% Compute statistics for normalization
 def cal_statistics(config, all_df):
     import pandas as pd
+    from omegaconf import OmegaConf,open_dict
     all_df = pd.concat(all_df)
-    for x in ['sbp', 'dbp']:
-        config.param_loader[f'{x}_mean'] = float(all_df[x].mean())
-        config.param_loader[f'{x}_std'] = float(all_df[x].std())
-        config.param_loader[f'{x}_min'] = float(all_df[x].min())
-        config.param_loader[f'{x}_max'] = float(all_df[x].max())
-    
-    # ppg
-    config.param_loader[f'ppg_mean'] = float(np.vstack(all_df['sfppg']).mean())
-    config.param_loader[f'ppg_std'] = float(np.vstack(all_df['sfppg']).std())
-    config.param_loader[f'ppg_min'] = float(np.vstack(all_df['sfppg']).min())
-    config.param_loader[f'ppg_max'] = float(np.vstack(all_df['sfppg']).max())
+    OmegaConf.set_struct(config, True)
+
+    with open_dict(config):
+        for x in ['sbp', 'dbp']:
+            config.param_loader[f'{x}_mean'] = float(all_df[x].mean())
+            config.param_loader[f'{x}_std'] = float(all_df[x].std())
+            config.param_loader[f'{x}_min'] = float(all_df[x].min())
+            config.param_loader[f'{x}_max'] = float(all_df[x].max())
+        
+        # ppg
+        config.param_loader[f'ppg_mean'] = float(np.vstack(all_df['sfppg']).mean())
+        config.param_loader[f'ppg_std'] = float(np.vstack(all_df['sfppg']).std())
+        config.param_loader[f'ppg_min'] = float(np.vstack(all_df['sfppg']).min())
+        config.param_loader[f'ppg_max'] = float(np.vstack(all_df['sfppg']).max())
     return config
 
 #%% Compute metric
@@ -268,3 +272,9 @@ def log_config(config_path):
     # mf.log_dict(config, "config.yaml")
     mf.log_artifact(config_path)
 
+def log_hydra_mlflow(name):
+    mf.log_artifact(os.path.join(os.getcwd(), '.hydra/config.yaml'))
+    mf.log_artifact(os.path.join(os.getcwd(), '.hydra/hydra.yaml'))
+    mf.log_artifact(os.path.join(os.getcwd(), '.hydra/overrides.yaml'))
+    mf.log_artifact(os.path.join(os.getcwd(), f'{name}.log'))
+    rmtree(os.path.join(os.getcwd()))
