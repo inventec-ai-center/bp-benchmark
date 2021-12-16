@@ -30,11 +30,11 @@ logger = logging.getLogger(__name__)
 #%%
 class Solver:
     DEFAULTS = {}   
-    def __init__(self, config_file):
+    def __init__(self, config):
         # Initialize
-        self.config_file = config_file
-        self.config = OmegaConf.load(self.config_file)
-        # self.config = config 
+        # self.config_file = config_file
+        # self.config = OmegaConf.load(self.config_file)
+        self.config = config 
 
     def _get_model(self, pos_weight=None, ckpt_path_abs=None):
         model = None
@@ -57,20 +57,21 @@ class Solver:
         elif mode=='test':
             loader = dm.test_dataloader()
 
-        # prediction
         bp_denorm = loader.dataset.bp_denorm
-        pred_bp = np.array([compute_sp_dp(p) for p in outputs["pred_abp"].squeeze(1).numpy()])
-        pred_sbp = bp_denorm(pred_bp[:,0], self.config, 'sbp')
-        pred_dbp = bp_denorm(pred_bp[:,1], self.config, 'dbp')
+
+        # ABP
+        true_abp = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'sbp')
+        pred_abp = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'sbp')
+
+        # prediction
+        pred_bp = np.array([compute_sp_dp(p) for p in pred_abp])
+        pred_sbp = pred_bp[:,0]
+        pred_dbp = pred_bp[:,1]
 
         # gorund truth
         true_bp = outputs["true_bp"].numpy()
         true_sbp = bp_denorm(true_bp[:,0], self.config, 'sbp')
         true_dbp = bp_denorm(true_bp[:,1], self.config, 'dbp')
-
-        # ABP
-        true_abp = bp_denorm(outputs["true_abp"].numpy(), self.config, 'sbp')
-        pred_abp = bp_denorm(outputs["pred_abp"].numpy(), self.config, 'sbp')
 
         # naive
         naive_bp =  np.mean(dm.train_dataloader(is_print=False).dataset._target_data, axis=0)
@@ -122,7 +123,7 @@ class Solver:
         all_split_df = joblib.load(self.config.exp.subject_dict)
         self.config = cal_statistics(self.config, all_split_df)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
-            if foldIdx==1:  break
+            # if foldIdx==1:  break
             train_df = pd.concat(np.array(all_split_df)[folds_train])
             val_df = pd.concat(np.array(all_split_df)[folds_val])
             test_df = pd.concat(np.array(all_split_df)[folds_test])
@@ -170,7 +171,7 @@ class Solver:
                 metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
                 logger.info(f"\t {metrics}")
                 mf.log_metrics(metrics)
-                log_config(self.config_file)
+                # log_config(self.config_file)
 
             # Save to model directory
             os.makedirs(self.config.path.model_directory, exist_ok=True)
