@@ -1,9 +1,6 @@
 # Paths
 path:
-    data_directory: "./datasets"
-    official_data_directory: "../../cinc2021/datasets/raw"
-    model_directory: "./${exp.model_type}"
-
+    model_directory: "./model-{${exp.model_type}}"
     mlflow_dir: "./mlruns" # relative path to the project root
 
 # --------------------------------------------------------------------------------------------------
