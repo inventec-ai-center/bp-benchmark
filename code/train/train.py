@@ -36,7 +36,7 @@ def main(args):
 
     time_start = time()
     config = OmegaConf.load(args.config_file)
-    solver = Solver(args.config_file)
+    solver = Solver(config)
     init_mlflow(config)
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
         log_params_mlflow(config)
