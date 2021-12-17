@@ -213,13 +213,11 @@ def cal_statistics(config, all_df):
     return config
 
 #%% Compute metric
-def cal_metric(sbp_err, dbp_err, metric={}, mode='val'):
-    metric['sbp_mae'] = np.mean(np.abs(sbp_err))
-    metric['sbp_std'] = np.std(sbp_err)
-    metric['sbp_me'] = np.mean(sbp_err)
-    metric['dbp_mae'] = np.mean(np.abs(dbp_err))
-    metric['dbp_std'] = np.std(dbp_err)
-    metric['dbp_me'] = np.mean(dbp_err)
+def cal_metric(err_dict, metric={}, mode='val'):
+    for k, v in err_dict.items():
+        metric[f'{k}_mae'] = np.mean(np.abs(v))
+        metric[f'{k}_std'] = np.std(v)
+        metric[f'{k}_me'] = np.mean(v)
     metric = {f'{mode}/{k}':round(v.item(),3) for k,v in metric.items()}
     return metric
 
