@@ -36,16 +36,27 @@ class Solver:
         # self.config = OmegaConf.load(self.config_file)
         self.config = config 
 
+    def _get_loader(self):
+        if self.config.exp.loader=="waveform":
+            return WavDataModule(self.config)
+        elif self.config.exp.loader=="feature":
+            return FeatDataModule(self.config)
+
+
     def _get_model(self, pos_weight=None, ckpt_path_abs=None):
         model = None
         if not ckpt_path_abs:
-            if self.config.exp.model_type == "unet1d":
+            if self.config.exp.model_type == "toy_model":
+                model = ToyModel(self.config.param_model, self.config.exp.random_state)
+            elif self.config.exp.model_type == "unet1d":
                 model = Unet1d(self.config.param_model, random_state=self.config.exp.random_state)
             else:
                 model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
             return model
         else:
-            if self.config.exp.model_type == "unet1d":
+            if self.config.exp.model_type == "toy_model":
+                model = ToyModel.load_from_checkpoint(ckpt_path_abs)
+            elif self.config.exp.model_type == "unet1d":
                 model = Unet1d.load_from_checkpoint(ckpt_path_abs)
             else:
                 model = eval(self.config.exp.model_type).load_from_checkpoint(ckpt_path_abs)
@@ -84,7 +95,7 @@ class Solver:
 
 
         metrics = model._cal_metric(torch.tensor(outputs["pred_abp"]), torch.tensor(outputs["true_abp"]))
-        metrics = cal_metric(sbp_err, dbp_err, metric=metrics, mode=mode)
+        metrics = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, metric=metrics, mode=mode)
         
 
         fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
@@ -116,14 +127,14 @@ class Solver:
         # =============================================================================
         # data module
         # =============================================================================
-        dm = WavDataModule(self.config)
-
+        # dm = WavDataModule(self.config)
+        dm = self._get_loader()
 
         # Nested cv 
         all_split_df = joblib.load(self.config.exp.subject_dict)
         self.config = cal_statistics(self.config, all_split_df)
-        for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
-            # if foldIdx==1:  break
+        for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
+            if (self.config.exp.N_fold==3) and (foldIdx==1):  break
             train_df = pd.concat(np.array(all_split_df)[folds_train])
             val_df = pd.concat(np.array(all_split_df)[folds_val])
             test_df = pd.concat(np.array(all_split_df)[folds_test])
@@ -186,17 +197,18 @@ class Solver:
         fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
         sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
         dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
-        naive_metric = cal_metric(sbp_err, dbp_err, mode='nv')
+        naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
         out_metric.update(naive_metric)
 
         sbp_err = fold_errors["val_sbp_pred"] - fold_errors["val_sbp_label"] 
         dbp_err = fold_errors["val_dbp_pred"] - fold_errors["val_dbp_label"] 
-        val_metric = cal_metric(sbp_err, dbp_err, mode='val')
+        val_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='val')
         out_metric.update(val_metric)
 
         sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
         dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
-        test_metric = cal_metric(sbp_err, dbp_err, mode='test')
+        test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
         out_metric.update(test_metric)
         
         return out_metric
+    
