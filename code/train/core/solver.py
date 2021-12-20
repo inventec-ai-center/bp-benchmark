@@ -7,7 +7,8 @@ import numpy as np
 from omegaconf import OmegaConf
 
 # Load loaders
-from core.loaders.wav_loader import WavDataModule
+from core.loaders import *
+# from core.loaders.wav_loader import WavDataModule
 from core.utils import (get_nested_fold_idx, get_ckpt, compute_sp_dp, cal_metric, cal_statistics, log_config)
 
 # Load model
