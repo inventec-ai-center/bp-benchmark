@@ -255,9 +255,11 @@ def log_params_mlflow(config):
     mf.log_params(config.get("exp"))
     # mf.log_params(config.get("param_feature"))
     try_mlflow_log(mf.log_params, config.get("param_preprocess"))
+    try_mlflow_log(mf.log_params, config.get("param_trainer"))
+    try_mlflow_log(mf.log_params, config.get("param_early_stop"))
     mf.log_params(config.get("param_loader"))
-    mf.log_params(config.get("param_trainer"))
-    mf.log_params(config.get("param_early_stop"))
+    # mf.log_params(config.get("param_trainer"))
+    # mf.log_params(config.get("param_early_stop"))
     if config.get("param_aug"):
         if config.param_aug.get("filter"):
             for k,v in dict(config.param_aug.filter).items():
