@@ -78,10 +78,6 @@ def main(config):
     # =============================================================================
     # Run
     # =============================================================================
-    # with omegaconf.open_dict(config):
-    #     config.path.data_directory = str((Path(utils.get_original_cwd())/config.path.data_directory).absolute())
-    #     config.path.official_data_directory = str((Path(utils.get_original_cwd())/config.path.official_data_directory).absolute())
-    
     mf.set_tracking_uri(MLRUNS_DIR)
     mf.set_experiment(config.exp.exp_name)
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
