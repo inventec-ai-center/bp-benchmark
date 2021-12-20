@@ -1,0 +1,71 @@
+# --------------------------------------------------------------------------------------------------
+defaults:
+  - override hydra/sweeper: optuna
+  # - override hydra/sweeper/sampler: tpe
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+
+# --------------------------------------------------------------------------------------------------
+hydra:
+  sweeper:
+    sampler:
+      seed: 123
+      _target_: optuna.samplers.TPESampler
+      consider_prior: true
+      prior_weight: 1.0
+      consider_magic_clip: true
+      consider_endpoints: false
+      n_startup_trials: 10
+      n_ei_candidates: 24
+      multivariate: false
+      warn_independent_sampling: true
+    direction: minimize
+    study_name: ${exp.exp_name}
+    storage: null
+    n_trials: 50
+    n_jobs: 16
+
+    search_space:
+      param_model.C: 
+        type: categorical
+        choices: [0.01,0.1,1,10,100]
+      param_model.kernel:
+        type: categorical
+        choices: ['linear', 'poly', 'rbf', 'sigmoid']
+
+# Paths
+path:
+    model_directory: "./model-${exp.model_type}"
+    mlflow_dir: "./mlruns" # relative path to the project root
+
+# --------------------------------------------------------------------------------------------------
+# exp settings
+exp:
+    fs: 125
+    N_fold: 3
+    random_state: 100
+    model_type: "toy_model" #"attnunet1d"
+    exp_name: "ml-uci-dataset8"
+    subject_dict: '/sensorsbp/processed_mimic3/uci_dataset/all_dataset8_df.pkl' # mix_split_df.pkl
+    loader: "feature"
+
+# --------------------------------------------------------------------------------------------------
+# features & labels
+
+# data laading / features
+param_loader:
+    phase_match: True
+    filtered: True
+    feat: [None] #["vpg"] 
+    ppg_norm: "loc_z" # glob_mm, glob_z, loc_z, loc_mm
+    bp_norm: "glob_z" # glob_mm, glob_z, loc_z, loc_mm
+    label: "sbp"
+    
+
+
+# --------------------------------------------------------------------------------------------------
+#  model param
+param_model:
+    kernel: "rbf"
+    C: 10
+
