@@ -7,6 +7,7 @@ scikit_learn==0.24.2
 joblib==0.17.0
 tqdm==4.51.0
 omegaconf==2.1.0
+scikit-multilearn==0.2.0
 
 # data loading tool
 biosppy==0.6.1
