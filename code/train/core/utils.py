@@ -39,8 +39,8 @@ def get_ckpt(r):
 
 #%% Global Normalization
 def global_norm(x, signal_type): 
-    if signal_type == "sbp": (x_min, x_max) = (60, 200)   # mmHg
-    elif signal_type == "dbp": (x_min, x_max) = (30, 110)   # mmHg
+    if signal_type == "SP": (x_min, x_max) = (60, 200)   # mmHg
+    elif signal_type == "DP": (x_min, x_max) = (30, 110)   # mmHg
     elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
     else: return None
 
@@ -48,65 +48,65 @@ def global_norm(x, signal_type):
     return (x - x_min) / (x_max - x_min)
     
 def global_denorm(x, signal_type):
-    if signal_type == "sbp": (x_min, x_max) = (60, 200)   # mmHg
-    elif signal_type == "dbp": (x_min, x_max) = (30, 110)   # mmHg
+    if signal_type == "SP": (x_min, x_max) = (60, 200)   # mmHg
+    elif signal_type == "DP": (x_min, x_max) = (30, 110)   # mmHg
     elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
     else: return None
 
     # Return values normalized between 0 and 1
     return x * (x_max-x_min) + x_min
 
-def glob_demm(x, config, type='sbp'): 
+def glob_demm(x, config, type='SP'): 
     # sensors global max, min
-    if type=='sbp':
-        x_min, x_max = config.param_loader.sbp_min, config.param_loader.sbp_max
-    elif type=='dbp':
-        x_min, x_max = config.param_loader.dbp_min, config.param_loader.dbp_max
+    if type=='SP':
+        x_min, x_max = config.param_loader.SP_min, config.param_loader.SP_max
+    elif type=='DP':
+        x_min, x_max = config.param_loader.DP_min, config.param_loader.DP_max
     elif type=='ppg':
         x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
     return x * (x_max-x_min) + x_min
 
-def glob_mm(x, config, type='sbp'): 
+def glob_mm(x, config, type='SP'): 
     # sensors global max, min
-    if type=='sbp':
-        x_min, x_max = config.param_loader.sbp_min, config.param_loader.sbp_max
-    elif type=='dbp':
-        x_min, x_max = config.param_loader.dbp_min, config.param_loader.dbp_max
+    if type=='SP':
+        x_min, x_max = config.param_loader.SP_min, config.param_loader.SP_max
+    elif type=='DP':
+        x_min, x_max = config.param_loader.DP_min, config.param_loader.DP_max
     elif type=='ppg':
         x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
     return (x - x_min) / (x_max - x_min)
 
-def glob_dez(x, config, type='sbp'): 
+def glob_dez(x, config, type='SP'): 
     # sensors global max, min
-    if type=='sbp':
-        x_mean, x_std = config.param_loader.sbp_mean, config.param_loader.sbp_std
-    elif type=='dbp':
-        x_mean, x_std = config.param_loader.dbp_mean, config.param_loader.dbp_std
+    if type=='SP':
+        x_mean, x_std = config.param_loader.SP_mean, config.param_loader.SP_std
+    elif type=='DP':
+        x_mean, x_std = config.param_loader.DP_mean, config.param_loader.DP_std
     elif type=='ppg':
         x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
     return x * (x_std + 1e-6) + x_mean
 
 def glob_z(x, config, type='sbp'): 
     # sensors global max, min
-    if type=='sbp':
-        x_mean, x_std = config.param_loader.sbp_mean, config.param_loader.sbp_std
-    elif type=='dbp':
-        x_mean, x_std = config.param_loader.dbp_mean, config.param_loader.dbp_std
+    if type=='SP':
+        x_mean, x_std = config.param_loader.SP_mean, config.param_loader.SP_std
+    elif type=='DP':
+        x_mean, x_std = config.param_loader.DP_mean, config.param_loader.DP_std
     elif type=='ppg':
         x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
     return (x - x_mean)/(x_std + 1e-6)
 
 #%% Local normalization
-def loc_mm(x,config, type='sbp'):
+def loc_mm(x,config, type='SP'):
     return (x - x.min())/(x.max() - x.min() + 1e-6)
 
-def loc_demm(x,config, type='sbp'):
+def loc_demm(x,config, type='SP'):
     return x * (x.max() - x.min() + 1e-6) + x.min()
 
-def loc_z(x,config, type='sbp'):
+def loc_z(x,config, type='SP'):
     return (x - x.mean())/(x.std() + 1e-6)
 
-def loc_dez(x,config, type='sbp'):
+def loc_dez(x,config, type='SP'):
     return x * (x.std() + 1e-6) + x.mean()
 
 #%% Compute bps
@@ -199,17 +199,18 @@ def cal_statistics(config, all_df):
     OmegaConf.set_struct(config, True)
 
     with open_dict(config):
-        for x in ['sbp', 'dbp']:
+        for x in ['SP', 'DP']:
             config.param_loader[f'{x}_mean'] = float(all_df[x].mean())
             config.param_loader[f'{x}_std'] = float(all_df[x].std())
             config.param_loader[f'{x}_min'] = float(all_df[x].min())
             config.param_loader[f'{x}_max'] = float(all_df[x].max())
         
         # ppg
-        config.param_loader[f'ppg_mean'] = float(np.vstack(all_df['sfppg']).mean())
-        config.param_loader[f'ppg_std'] = float(np.vstack(all_df['sfppg']).std())
-        config.param_loader[f'ppg_min'] = float(np.vstack(all_df['sfppg']).min())
-        config.param_loader[f'ppg_max'] = float(np.vstack(all_df['sfppg']).max())
+        if config.param_loader.ppg_norm.startswith('glob'):
+            config.param_loader[f'ppg_mean'] = float(np.vstack(all_df['signal']).mean())
+            config.param_loader[f'ppg_std'] = float(np.vstack(all_df['signal']).std())
+            config.param_loader[f'ppg_min'] = float(np.vstack(all_df['signal']).min())
+            config.param_loader[f'ppg_max'] = float(np.vstack(all_df['signal']).max())
     return config
 
 #%% Compute metric

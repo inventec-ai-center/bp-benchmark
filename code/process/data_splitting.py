@@ -44,7 +44,7 @@ def data_splitting(config):
     # cross-validation
     if config.param_split.type=='cv': 
         data = pd.read_pickle(config.path.processed_df_path) #sensors_data2.pkl
-        data.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp']
+        # data.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp']
 
         if config.path.demo_df_path != None:
             demo_df = pd.read_csv(config.path.demo_df_path)
@@ -53,14 +53,14 @@ def data_splitting(config):
             # make subject_id to string
             demo_df.subject_id = demo_df.subject_id.apply(lambda x: f'{x:06}')
             # merge demo_df to data
-            data = data.merge(demo_df, on='subject_id', how='left')
+            data = data.merge(demo_df, on='patient', how='left')
             # data conversion
             data['sex'] = data.apply(lambda row: 0 if row["gender"]=='M' else 1, axis=1)
             min_age, max_age = data["age"].min(), data["age"].max()
             data['norm_age'] = data.apply(lambda row: (row["age"]-min_age)/(max_age-min_age), axis=1)
 
         if config.param_split.is_mix:
-            data["label_class"] = data.apply(lambda row: label2class(row["sbp"], row["dbp"]), axis=1)
+            data["label_class"] = data.apply(lambda row: label2class(row["SP"], row["DP"]), axis=1)
             data["agg_ohe"] = data.apply(lambda row: ohe({str(row["label_class"]):1})[0], axis=1)
             # Stratified spliting
             k_fold = IterativeStratification(n_splits=config.param_split.fold, order=1)
@@ -70,12 +70,12 @@ def data_splitting(config):
                 all_split_df.append(test_df)
         else:
             # convert label to class: (SBP, DBP) -> (SBP class, DBP class)    
-            data["label_class"] = data.apply(lambda row: label2class(row["sbp"], row["dbp"]), axis=1)
+            data["label_class"] = data.apply(lambda row: label2class(row["SP"], row["DP"]), axis=1)
 
             # count frequency of the same (SBP class, DBP class) pair in each subject
             all_subject = []
             all_agg_ohe = []
-            for group in data.groupby(['subject_id']):
+            for group in data.groupby(['patient']):
                 sub_id, sub_df = group
                 agg_ohe,ohe_dict = ohe(Counter(str(row) for row in sub_df['label_class'] ))
                 all_agg_ohe.append(agg_ohe)
@@ -83,12 +83,12 @@ def data_splitting(config):
 
             # Stratified spliting
             new_sub_ohe = pd.DataFrame()
-            new_sub_ohe["subject_id"] = all_subject
+            new_sub_ohe["patient"] = all_subject
             new_sub_ohe["agg_ohe"] = all_agg_ohe
             k_fold = IterativeStratification(n_splits=config.param_split.fold, order=1)
             all_split_df = []
-            for train, test in k_fold.split(new_sub_ohe["subject_id"].values, np.stack(new_sub_ohe["agg_ohe"].values)):
-                test_df = data.loc[data['subject_id'].isin(list(new_sub_ohe.iloc[test].subject_id))]
+            for train, test in k_fold.split(new_sub_ohe["patient"].values, np.stack(new_sub_ohe["agg_ohe"].values)):
+                test_df = data.loc[data['patient'].isin(list(new_sub_ohe.iloc[test].subject_id))]
                 all_split_df.append(test_df)
             
     # ------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ def data_splitting(config):
     elif config.param_split.type=='hoo':
         df = pd.read_pickle(config.path.processed_df_path)
         df["part"] = df.apply(lambda row: '_'.join(row.patient.split('_')[:2]), axis=1)
-        df.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp',  'part']
+        # df.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp',  'part']
         if config.param_split.is_mix:
             ts_df = df.sample(frac=0.2, random_state=100)
             exclude = df.index.isin(ts_df.index.to_list())
@@ -128,10 +128,10 @@ def data_splitting(config):
 #%%
 if __name__=='__main__':
     from omegaconf import OmegaConf 
-    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_uci_5s.yaml')
+    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_uci_feat_5s.yaml')
     data_splitting(config)
 
-    data = joblib.load('/sensorsbp/processed_mimic3/sensors_dataset/all_dataset_test_df.pkl')
+    data = joblib.load(config.path.split_df_path)
     cnt = 0
     for d in data:
         cnt+=d.shape[0]

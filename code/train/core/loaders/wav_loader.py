@@ -59,8 +59,8 @@ class sensorsLoader():
         self._normalization()
         self._get_signal_feature()
         amounts = len(self.all_ppg)
-        sbps = self.bp_denorm(self._target_data[:,0], self.config, 'sbp')
-        dbps = self.bp_denorm(self._target_data[:,1], self.config, 'dbp')
+        sbps = self.bp_denorm(self._target_data[:,0], self.config, 'SP')
+        dbps = self.bp_denorm(self._target_data[:,1], self.config, 'DP')
 
         if is_print:
             print("Loader length: ", amounts)
@@ -106,17 +106,7 @@ class sensorsLoader():
         all_dbp = []
 
         # get ppg
-        if self.phase_match:
-            if self.filtered:
-                all_ppg  = np.stack(self.data_df["sfppg"].values)
-            else:
-                all_ppg  = np.stack(self.data_df["srppg"].values)
-        else:
-            if self.filtered:
-                all_ppg  = np.stack(self.data_df["fppg"].values)
-            else:
-                all_ppg  = np.stack(self.data_df["rppg"].values)
-
+        all_ppg  = np.stack(self.data_df["signal"].values)
         all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in all_ppg])
         all_ppg = np.expand_dims(np.array(all_ppg), axis=1).astype("float32")
        
@@ -157,15 +147,15 @@ class sensorsLoader():
         else:
             self.all_ppg = all_ppg
         
-        all_abp = self.bp_norm(np.stack(self.data_df["abp"].values), self.config, type="sbp")
+        all_abp = self.bp_norm(np.stack(self.data_df["abp_signal"].values), self.config, type="SP")
 
-        all_sbp = self.bp_norm(np.stack(self.data_df["sbp"].values).reshape(-1,1), self.config, type="sbp")
-        all_dbp = self.bp_norm(np.stack(self.data_df["dbp"].values).reshape(-1,1), self.config, type="dbp")
+        all_sbp = self.bp_norm(np.stack(self.data_df["SP"].values).reshape(-1,1), self.config, type="SP")
+        all_dbp = self.bp_norm(np.stack(self.data_df["DP"].values).reshape(-1,1), self.config, type="DP")
         
         self.all_abp = np.expand_dims(np.array(all_abp), axis=1).astype("float32")
         self._target_data = np.concatenate([all_sbp, all_dbp],axis=1).astype("float32")
 
-        self.subjects = list(self.data_df['subject_id']) 
+        self.subjects = list(self.data_df['patient']) 
         self.records = list(self.data_df['trial']) 
 
     def __getitem__(self, index):

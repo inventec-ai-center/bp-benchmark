@@ -57,12 +57,9 @@ class sensorsLoader():
         self._normalization()
         self._get_signal_feature()
         amounts = len(self.all_ppg)
-        # sbps = self.bp_denorm(self._target_data[:,0], self.config, 'sbp')
-        # dbps = self.bp_denorm(self._target_data[:,1], self.config, 'dbp')
 
         if is_print:
             print("Loader length: ", amounts)
-            # print_criterion(sbps, dbps)
             print("PPG min {:.2f}, max {:.2f}".format(np.min(self.all_ppg), np.max(self.all_ppg)))
             print(f"ppg shape: {self.all_ppg.shape}")
     
@@ -98,27 +95,15 @@ class sensorsLoader():
             self.bp_denorm = glob_demm
 
     def _get_signal_feature(self):
-        all_ppg = []
-        all_abp = []
-        all_sbp = []
-        all_dbp = []
+        target = self.config.param_loader.label
 
         # get ppg
-        if self.phase_match:
-            if self.filtered:
-                all_ppg  = np.stack(self.data_df["sfppg"].values)
-            else:
-                all_ppg  = np.stack(self.data_df["srppg"].values)
-        else:
-            if self.filtered:
-                all_ppg  = np.stack(self.data_df["fppg"].values)
-            else:
-                all_ppg  = np.stack(self.data_df["rppg"].values)
-
+        all_ppg = self.data_df.loc[:, ~self.data_df.columns.isin(['patient','trial','SP', 'DP','part'])]
+        all_ppg = all_ppg.fillna(0).values
         self.all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in all_ppg])
-        self.all_label = self.bp_norm(np.stack(self.data_df[self.config.param_loader.label].values).reshape(-1,1), self.config, type="sbp")
+        self.all_label = self.bp_norm(np.stack(self.data_df[target].values).reshape(-1,1), self.config, type=target)
         
-        self.subjects = list(self.data_df['subject_id']) 
+        self.subjects = list(self.data_df['patient']) 
         self.records = list(self.data_df['trial']) 
 
     def __getitem__(self, index):
@@ -132,12 +117,12 @@ class sensorsLoader():
 if __name__=='__main__':
     import joblib
     from core.utils import cal_statistics
-    config = OmegaConf.load('/sensorsbp/code/train/core/config/unet_sensors_5s.yaml')
+    config = OmegaConf.load('/sensorsbp/code/train/core/config/hydra/toyml_uci_5s.yaml')
     all_split_df = joblib.load(config.exp.subject_dict)
     config= cal_statistics(config, all_split_df)
 
 
-    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
+    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(3)):
         if foldIdx==0:  break
     train_df = pd.concat(np.array(all_split_df)[folds_train])
     val_df = pd.concat(np.array(all_split_df)[folds_val])
@@ -150,5 +135,5 @@ if __name__=='__main__':
     # dm.test_dataloader()
 
     # ppg, y, abp, peakmask, vlymask = next(iter(dm.test_dataloader().dataset))
-    for i, (ppg, y, abp) in enumerate(dm.test_dataloader()):
+    for i, (ppg, y) in enumerate(dm.test_dataloader()):
         print(ppg.shape)
