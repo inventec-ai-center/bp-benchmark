@@ -119,7 +119,16 @@ def data_splitting(config):
 #%%
 if __name__=='__main__':
     from omegaconf import OmegaConf 
-    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_sensors_5s.yaml')
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_file", type=str, help="Path for the config file") 
+    
+    # split the data with given config
+    config = OmegaConf.load(parser.parse_args().config_file)
+    data_splitting(config)
+
+    # load result and get naive
     all_split_df = joblib.load(config.path.split_df_path)
     
     all_sp_MAE = []
