@@ -1,0 +1,3 @@
+[submodule "code/train/mdnc"]
+	path = code/train/mdnc
+	url = https://github.com/cainmagi/MDNC.git

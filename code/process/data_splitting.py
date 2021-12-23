@@ -88,7 +88,7 @@ def data_splitting(config):
             k_fold = IterativeStratification(n_splits=config.param_split.fold, order=1)
             all_split_df = []
             for train, test in k_fold.split(new_sub_ohe["patient"].values, np.stack(new_sub_ohe["agg_ohe"].values)):
-                test_df = data.loc[data['patient'].isin(list(new_sub_ohe.iloc[test].subject_id))]
+                test_df = data.loc[data['patient'].isin(list(new_sub_ohe.iloc[test].patient))]
                 all_split_df.append(test_df)
             
     # ------------------------------------------------------------------------------------------
@@ -112,11 +112,11 @@ def data_splitting(config):
                 val_ts_df = df[df.part.isin(config.param_split.val_part)]
 
                 # Split val and ts by records
-                all_recs = list(val_ts_df.subject_id.unique())
+                all_recs = list(val_ts_df.patient.unique())
                 random.seed(config.param_split.random_state)
                 val_recs = random.sample(all_recs, int(0.2*len(all_recs)))
 
-                val_df = val_ts_df[val_ts_df.subject_id.isin(val_recs)]
+                val_df = val_ts_df[val_ts_df.patient.isin(val_recs)]
                 exclude = val_ts_df.index.isin(val_df.index.to_list())
                 ts_df = val_ts_df[~exclude]
             else: 
@@ -128,7 +128,7 @@ def data_splitting(config):
 #%%
 if __name__=='__main__':
     from omegaconf import OmegaConf 
-    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_uci_feat_5s.yaml')
+    config = OmegaConf.load('./core/config/process_sensors_5s.yaml')
     data_splitting(config)
 
     data = joblib.load(config.path.split_df_path)
