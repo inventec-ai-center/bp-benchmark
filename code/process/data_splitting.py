@@ -8,6 +8,10 @@ import numpy as np
 import pandas as pd
 import joblib
 
+np.random.seed(0)
+random.seed(0)
+
+
 def label2class(sbp, dbp):
     ret = np.zeros(2)
     # sbp to class
@@ -44,20 +48,6 @@ def data_splitting(config):
     # cross-validation
     if config.param_split.type=='cv': 
         data = pd.read_pickle(config.path.processed_df_path) #sensors_data2.pkl
-        # data.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp']
-
-        if config.path.demo_df_path != None:
-            demo_df = pd.read_csv(config.path.demo_df_path)
-            # drop useless column in demo_df
-            demo_df = demo_df.drop(["Unnamed: 0"], axis=1)
-            # make subject_id to string
-            demo_df.subject_id = demo_df.subject_id.apply(lambda x: f'{x:06}')
-            # merge demo_df to data
-            data = data.merge(demo_df, on='patient', how='left')
-            # data conversion
-            data['sex'] = data.apply(lambda row: 0 if row["gender"]=='M' else 1, axis=1)
-            min_age, max_age = data["age"].min(), data["age"].max()
-            data['norm_age'] = data.apply(lambda row: (row["age"]-min_age)/(max_age-min_age), axis=1)
 
         if config.param_split.is_mix:
             data["label_class"] = data.apply(lambda row: label2class(row["SP"], row["DP"]), axis=1)
@@ -85,10 +75,11 @@ def data_splitting(config):
             new_sub_ohe = pd.DataFrame()
             new_sub_ohe["patient"] = all_subject
             new_sub_ohe["agg_ohe"] = all_agg_ohe
+            
             k_fold = IterativeStratification(n_splits=config.param_split.fold, order=1)
             all_split_df = []
             for train, test in k_fold.split(new_sub_ohe["patient"].values, np.stack(new_sub_ohe["agg_ohe"].values)):
-                test_df = data.loc[data['patient'].isin(list(new_sub_ohe.iloc[test].subject_id))]
+                test_df = data.loc[data['patient'].isin(list(new_sub_ohe.iloc[test].patient))]
                 all_split_df.append(test_df)
             
     # ------------------------------------------------------------------------------------------
@@ -112,11 +103,11 @@ def data_splitting(config):
                 val_ts_df = df[df.part.isin(config.param_split.val_part)]
 
                 # Split val and ts by records
-                all_recs = list(val_ts_df.subject_id.unique())
-                random.seed(config.param_split.random_state)
+                all_recs = list(val_ts_df.patient.unique())
+                
                 val_recs = random.sample(all_recs, int(0.2*len(all_recs)))
 
-                val_df = val_ts_df[val_ts_df.subject_id.isin(val_recs)]
+                val_df = val_ts_df[val_ts_df.patient.isin(val_recs)]
                 exclude = val_ts_df.index.isin(val_df.index.to_list())
                 ts_df = val_ts_df[~exclude]
             else: 
@@ -128,11 +119,35 @@ def data_splitting(config):
 #%%
 if __name__=='__main__':
     from omegaconf import OmegaConf 
-    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_uci_feat_5s.yaml')
-    data_splitting(config)
-
-    data = joblib.load(config.path.split_df_path)
+    config = OmegaConf.load('/sensorsbp/code/process/core/config/process_sensors_5s.yaml')
+    all_split_df = joblib.load(config.path.split_df_path)
+    
+    all_sp_MAE = []
+    all_dp_MAE = []
+    all_sp_ME = []
+    all_dp_ME = []
+    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
+        print(folds_train, folds_val, folds_test)
+        train_df = pd.concat(np.array(all_split_df)[folds_train])
+        val_df = pd.concat(np.array(all_split_df)[folds_val])
+        test_df = pd.concat(np.array(all_split_df)[folds_test])
+        train_sp = train_df["SP"].mean()
+        train_dp = train_df["DP"].mean()
+        all_sp_MAE.append((train_sp-test_df["SP"]).abs())
+        all_dp_MAE.append((train_dp-test_df["DP"]).abs())
+        all_sp_ME.append(train_sp-test_df["SP"])
+        all_dp_ME.append(train_dp-test_df["DP"])
+    all_sp_MAE = np.hstack(all_sp_MAE)
+    all_dp_MAE = np.hstack(all_dp_MAE)
+    all_sp_ME = np.hstack(all_sp_ME)
+    all_dp_ME = np.hstack(all_dp_ME)
+    sp_mae = np.mean(all_sp_MAE)
+    dp_mae = np.mean(all_dp_MAE)
+    print("SBP: MAE {:.2f} | ME {:.2f} | STD {:.2f}".format(sp_mae, all_sp_ME.mean(), all_sp_ME.std()))
+    print("DBP: MAE {:.2f} | ME {:.2f} | STD {:.2f}".format(dp_mae, all_dp_ME.mean(), all_dp_ME.std()))
+    print("SBP: MAE {} | ME {} | STD {}".format(sp_mae, all_sp_ME.mean(), all_sp_ME.std()))
+    print("DBP: MAE {} | ME {} | STD {}".format(dp_mae, all_dp_ME.mean(), all_dp_ME.std()))
     cnt = 0
-    for d in data:
+    for d in all_split_df:
         cnt+=d.shape[0]
     print('total amount', cnt)

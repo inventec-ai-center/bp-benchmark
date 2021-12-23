@@ -32,6 +32,12 @@ hydra:
       param_model.first_kernel_size:
         type: categorical
         choices: [5,9,11,15]
+      param_model.kernel_size:
+        type: categorical
+        choices: [3,5]
+      param_model.n_block:
+        type: categorical
+        choices: [4,8,10]
 
       
 # Paths
@@ -47,7 +53,7 @@ exp:
     random_state: 100
     model_type: "resnet1d" #"attnunet1d"
     exp_name: "sensors-resnet"
-    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_split_cons_df.pkl' # mix_split_df.pkl
+    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_sensors_data_bw4_bsr_5s_df.pkl' # mix_split_df.pkl
     loader: 'waveform'
     cv: 'cv'
 # --------------------------------------------------------------------------------------------------

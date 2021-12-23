@@ -49,7 +49,7 @@ class Resnet1d(Regressor):
     def test_step(self, batch, batch_idx):
         loss, pred_bp, t_abp, label = self._shared_step(batch)
         self.log('test_loss', loss, prog_bar=True)
-        return {"loss":loss, "pred_abp":pred_bp, "true_abp":t_abp, "true_bp":label}
+        return {"loss":loss, "pred_bp":pred_bp, "true_abp":t_abp, "true_bp":label}
 
     def test_epoch_end(self, test_step_end_out):
         logit = torch.cat([v["pred_bp"] for v in test_step_end_out], dim=0)

@@ -9,6 +9,10 @@ import coloredlogs, logging
 coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
+SEED = 0
+torch.manual_seed(SEED)
+torch.cuda.manual_seed(SEED) 
+torch.cuda.manual_seed_all(SEED)
 
 class Regressor(pl.LightningModule):
     def __init__(self, param_model, random_state=0, pos_weight=None):
