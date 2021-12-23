@@ -1,6 +1,4 @@
 #%%
-import os
-os.chdir('/sensorsbp/code/train')
 import joblib
 import random
 import pandas as pd
