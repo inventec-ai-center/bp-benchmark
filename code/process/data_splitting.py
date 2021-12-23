@@ -135,11 +135,13 @@ if __name__=='__main__':
     all_dp_MAE = []
     all_sp_ME = []
     all_dp_ME = []
-    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
+    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(len(all_split_df))):
+        if (config.param_split.type=='hoo') and foldIdx!=0:  break
         print(folds_train, folds_val, folds_test)
         train_df = pd.concat(np.array(all_split_df)[folds_train])
         val_df = pd.concat(np.array(all_split_df)[folds_val])
         test_df = pd.concat(np.array(all_split_df)[folds_test])
+
         train_sp = train_df["SP"].mean()
         train_dp = train_df["DP"].mean()
         all_sp_MAE.append((train_sp-test_df["SP"]).abs())
@@ -160,3 +162,6 @@ if __name__=='__main__':
     for d in all_split_df:
         cnt+=d.shape[0]
     print('total amount', cnt)
+
+    
+    
