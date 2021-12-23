@@ -72,8 +72,8 @@ class Solver:
         bp_denorm = loader.dataset.bp_denorm
 
         # ABP
-        true_abp = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'sbp')
-        pred_abp = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'sbp')
+        true_abp = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'SP')
+        pred_abp = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'SP')
 
         # prediction
         pred_bp = np.array([compute_sp_dp(p) for p in pred_abp])
@@ -82,13 +82,13 @@ class Solver:
 
         # gorund truth
         true_bp = outputs["true_bp"].numpy()
-        true_sbp = bp_denorm(true_bp[:,0], self.config, 'sbp')
-        true_dbp = bp_denorm(true_bp[:,1], self.config, 'dbp')
+        true_sbp = bp_denorm(true_bp[:,0], self.config, 'SP')
+        true_dbp = bp_denorm(true_bp[:,1], self.config, 'DP')
 
         # naive
         naive_bp =  np.mean(dm.train_dataloader(is_print=False).dataset._target_data, axis=0)
-        naive_sbp = bp_denorm(naive_bp[0], self.config, 'sbp')
-        naive_dbp = bp_denorm(naive_bp[1], self.config, 'dbp')
+        naive_sbp = bp_denorm(naive_bp[0], self.config, 'SP')
+        naive_dbp = bp_denorm(naive_bp[1], self.config, 'DP')
 
         # error
         sbp_err = pred_sbp - true_sbp
