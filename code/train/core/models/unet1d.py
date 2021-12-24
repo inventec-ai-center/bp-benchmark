@@ -100,7 +100,7 @@ if __name__=='__main__':
     from pytorch_lightning.callbacks import LearningRateMonitor
     from core.models.trainer import MyTrainer
 
-d('/sensorsbp/code/train/core/config/unet_sensors_5s.yaml')    config = OmegaConf.loa
+    config = OmegaConf.load('/sensorsbp/code/train/core/config/unet_sensors_5s.yaml')
     all_split_df = joblib.load(config.exp.subject_dict)
     config = cal_statistics(config, all_split_df)
     for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
