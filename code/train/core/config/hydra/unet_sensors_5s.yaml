@@ -47,8 +47,9 @@ exp:
     random_state: 100
     model_type: "unet1d" #"attnunet1d"
     exp_name: "sensors-dataset2"
-    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_split_cons_df.pkl' # mix_split_df.pkl
-
+    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_sensors_data_bw4_bsr_5s_df.pkl' # mix_split_df.pkl
+    cv: 'cv'
+    loader: 'waveform'
 # --------------------------------------------------------------------------------------------------
 # features & labels
 
