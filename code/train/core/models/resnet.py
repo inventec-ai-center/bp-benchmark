@@ -67,11 +67,13 @@ class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
     def __init__(self, c, r=16):
         super().__init__()
+        h = c // r
+        if h<4: h = 4
         self.squeeze = nn.AdaptiveAvgPool1d(1)
         self.excitation = nn.Sequential(
-            nn.Linear(c, c // r, bias=False),
+            nn.Linear(c, h, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(c // r, c, bias=False),
+            nn.Linear(h, c, bias=False),
             nn.Sigmoid()
         )
 
@@ -132,7 +134,8 @@ class BasicBlock(nn.Module):
         if self.is_se:  self.se = SE_Block(out_channels, 16)
 
     def forward(self, x):
-        
+        if x.shape[0]<4:    self.use_bn = False
+
         identity = x
         
         # the first conv
