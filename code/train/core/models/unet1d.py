@@ -16,8 +16,8 @@ class Unet1d(Regressor):
                                             out_planes=1) 
 
     def _shared_step(self, batch):
-        x_ppg, y, x_abp, peakmask, vlymask = batch
-        pred, hidden = self.model(x_ppg)
+        x, y, x_abp, peakmask, vlymask = batch
+        pred, hidden = self.model(x['ppg'])
         loss = self.criterion(pred, x_abp)
         return loss, pred, x_abp, y, peakmask, vlymask
 
@@ -32,7 +32,7 @@ class Unet1d(Regressor):
         mask_pk = torch.cat([v["mask_pk"] for v in train_step_outputs], dim=0)
         mask_vly = torch.cat([v["mask_vly"] for v in train_step_outputs], dim=0)
 
-        metrics = self._cal_metric(logit.detach(), label.detach(), mask_pk.detach(), mask_vly.detach())
+        metrics = self._cal_metric(logit.detach(), label.detach())
         self._log_metric(metrics, mode="train")
 
     def validation_step(self, batch, batch_idx):
@@ -46,7 +46,7 @@ class Unet1d(Regressor):
         mask_pk = torch.cat([v["mask_pk"] for v in val_step_end_out], dim=0)
         mask_vly = torch.cat([v["mask_vly"] for v in val_step_end_out], dim=0)
 
-        metrics = self._cal_metric(logit.detach(), label.detach(), mask_pk.detach(), mask_vly.detach())
+        metrics = self._cal_metric(logit.detach(), label.detach())
         self._log_metric(metrics, mode="val")
         return val_step_end_out
 
@@ -61,11 +61,11 @@ class Unet1d(Regressor):
         mask_pk = torch.cat([v["mask_pk"] for v in test_step_end_out], dim=0)
         mask_vly = torch.cat([v["mask_vly"] for v in test_step_end_out], dim=0)
 
-        metrics = self._cal_metric(logit.detach(), label.detach(), mask_pk.detach(), mask_vly.detach())
+        metrics = self._cal_metric(logit.detach(), label.detach())
         self._log_metric(metrics, mode="test")
         return test_step_end_out
 
-    def _cal_metric(self, logit:torch.tensor, label:torch.tensor, mask_pk:list, mask_vly:list):
+    def _cal_metric(self, logit:torch.tensor, label:torch.tensor):
         mse = torch.mean((logit-label)**2)
         mae = torch.mean(torch.abs(logit-label))
         me = torch.mean(logit-label)
@@ -100,7 +100,7 @@ if __name__=='__main__':
     from pytorch_lightning.callbacks import LearningRateMonitor
     from core.models.trainer import MyTrainer
 
-    config = OmegaConf.load('/sensorsbp/code/train/core/config/unet_sensors_5s.yaml')
+    config = OmegaConf.load('/sensorsbp/code/train/core/config/hydra/unet_sensors_valstd.yaml')
     all_split_df = joblib.load(config.exp.subject_dict)
     config = cal_statistics(config, all_split_df)
     for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
