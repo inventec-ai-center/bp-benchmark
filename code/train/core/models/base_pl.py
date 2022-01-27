@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from .utils import CosineWarmupScheduler
 
 import coloredlogs, logging
 coloredlogs.install()
@@ -74,8 +75,10 @@ class Regressor(pl.LightningModule):
     def _cal_metric(self, logit:torch.tensor, label:torch.tensor):
         mse = torch.mean((logit-label)**2)
         mae = torch.mean(torch.abs(logit-label))
-        return {"mse":mse, "mae":mae}    
-
+        me = torch.mean(logit-label)
+        std = torch.std(torch.mean(logit-label, dim=1))
+        return {"mse":mse, "mae":mae, "std": std, "me": me} 
+    
     def _log_metric(self, metrics, mode):
         for k,v in metrics.items():
             self.log(f"{mode}_{k}", v, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -85,10 +88,8 @@ class Regressor(pl.LightningModule):
     # =============================================================================
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.param_model.lr)
-        if self.param_model.get("scheduler_ReduceLROnPlateau"):
-            lr_schedulers = {"scheduler":ReduceLROnPlateau(optimizer,**(self.param_model.scheduler_ReduceLROnPlateau)), "monitor":"val_loss"}
-            return [optimizer], lr_schedulers
         if self.param_model.get("scheduler_WarmUp"):
-            lr_schedulers = {"scheduler":ReduceLROnPlateau(optimizer,**(self.param_model.scheduler_WarmUp)), "monitor":"val_loss"}
-            return [optimizer], lr_schedulers
+            logger.info("!!!!!!!! is using warm up !!!!!!!!")
+            self.lr_scheduler = {"scheduler":CosineWarmupScheduler(optimizer,**(self.param_model.scheduler_WarmUp)), "monitor":"val_loss"}
+            return [optimizer], self.lr_scheduler
         return optimizer
