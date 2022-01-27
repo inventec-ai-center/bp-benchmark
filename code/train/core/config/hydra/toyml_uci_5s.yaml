@@ -45,8 +45,8 @@ exp:
     N_fold: 3
     random_state: 100
     model_type: "toy_model" #"attnunet1d"
-    exp_name: "ml-uci-dataset8"
-    subject_dict: '/sensorsbp/processed_mimic3/uci_dataset/all_dataset8_df.pkl' # mix_split_df.pkl
+    exp_name: "ml-uci-dataset9"
+    subject_dict: '/sensorsbp/processed_mimic3/uci_dataset/all_uci_data_bw4_bsr_5s_feats_df.pkl' # mix_split_df.pkl
     loader: "feature"
 
 # --------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ param_loader:
     feat: [None] #["vpg"] 
     ppg_norm: "loc_z" # glob_mm, glob_z, loc_z, loc_mm
     bp_norm: "glob_z" # glob_mm, glob_z, loc_z, loc_mm
-    label: "sbp"
+    label: "SP" # 'DP'
     
 
 
