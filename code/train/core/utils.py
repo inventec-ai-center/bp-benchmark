@@ -182,12 +182,18 @@ def compute_sp_dp(sig, fs=125, pk_th=0.6):
     return np.median(sig[new_peaks]), np.median(sig[valleys]), flag1, flag2, new_peaks, valleys
     
 def get_bp_pk_vly_mask(data):
-    _,_,_,_,pks, vlys = compute_sp_dp(data, 125, pk_th=0.6)
+    try:
+        _,_,_,_,pks, vlys = compute_sp_dp(data, 125, pk_th=0.6)
 
-    pk_mask = np.zeros_like(data)
-    vly_mask = np.zeros_like(data)
-    pk_mask[pks] = 1
-    vly_mask[vlys] = 1
+        pk_mask = np.zeros_like(data)
+        vly_mask = np.zeros_like(data)
+        pk_mask[pks] = 1
+        vly_mask[vlys] = 1
+
+    except:
+        print("!!! No peaks and vlys found for peak_vly_mask !!!")
+        pk_mask = np.zeros_like(data)
+        vly_mask = np.zeros_like(data)
     
     return np.array(pk_mask, dtype=bool), np.array(vly_mask, dtype=bool)
 
