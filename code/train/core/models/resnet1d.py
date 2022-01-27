@@ -153,8 +153,11 @@ class ResNet1D(nn.Module):
 
     # def forward(self, x):
     def forward(self, x):
-       
+        x = x['ppg']
         assert len(x.shape) == 3
+
+        # skip batch norm if batchsize<4:
+        if x.shape[0]<4:    self.use_bn = False 
 
         # first conv
         if self.verbose:
