@@ -3,7 +3,7 @@ import os
 import joblib
 from shutil import rmtree
 import pandas as pd
-import numpy as np 
+import numpy as np
 from omegaconf import OmegaConf
 
 # Load loaders
@@ -130,7 +130,6 @@ class Solver:
         # =============================================================================
         # dm = WavDataModule(self.config)
         dm = self._get_loader()
-
         # Nested cv 
         all_split_df = joblib.load(self.config.exp.subject_dict)
         self.config = cal_statistics(self.config, all_split_df)
@@ -213,3 +212,62 @@ class Solver:
         
         return out_metric
     
+    def test(self):
+        results = {}
+        fold_errors_template = {"subject_id":[],
+                                "record_id": [],
+                                "sbp_naive":[],
+                                "sbp_pred":[],
+                                "sbp_label":[],
+                                "dbp_naive":[],
+                                "dbp_pred":[],
+                                "dbp_label":[],
+                                "abp_true":[],
+                                "abp_pred":[]}
+        fold_errors = {f"{mode}_{k}":[] for k,v in fold_errors_template.items() for mode in ["test"]}
+        # =============================================================================
+        # data module
+        # =============================================================================
+        # dm = WavDataModule(self.config)
+        dm = self._get_loader()
+        # Nested cv 
+        all_split_df = joblib.load(self.config.exp.subject_dict)
+        self.config = cal_statistics(self.config, all_split_df)
+        for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
+            if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
+            train_df = pd.concat(np.array(all_split_df)[folds_train])
+            val_df = pd.concat(np.array(all_split_df)[folds_val])
+            test_df = pd.concat(np.array(all_split_df)[folds_test])
+            
+            dm.setup_kfold(train_df, val_df, test_df)
+
+            # load trained model
+            model = self._get_model()
+            trainer = MyTrainer()
+
+            model = self._get_model(ckpt_path_abs=self.config.param_test.model_path[foldIdx])
+            model.eval()
+            trainer.model = model
+            # get test output
+            test_outputs = trainer.test(model=model, test_dataloaders=dm.test_dataloader(), verbose=True)
+            metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
+            logger.info(f"\t {metrics}")
+
+        results['fold_errors'] = fold_errors    
+
+        out_metric = {}
+        fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
+        sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
+        dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
+        naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
+        out_metric.update(naive_metric)
+
+        sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
+        dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
+        test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
+        out_metric.update(test_metric)
+        
+        results['out_metric'] = out_metric 
+        joblib.dump(results, self.config.param_test.save_path)   
+
+        print(out_metric)   
