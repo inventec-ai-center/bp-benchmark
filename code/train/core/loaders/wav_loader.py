@@ -11,6 +11,8 @@ from omegaconf import OmegaConf
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
+# from torchaudio.transforms import Spectrogram
+# import torch
 
 class WavDataModule(pl.LightningDataModule):
     def __init__(self, config):
@@ -33,8 +35,9 @@ class WavDataModule(pl.LightningDataModule):
         else:
             print("Get your aligned dataset ready!")
 
-        if mode == "test": batch_size=512
-        else: batch_size = self.config.param_model.batch_size
+        # if mode == "test": batch_size=512
+        # else: batch_size = self.config.param_model.batch_size
+        batch_size = self.config.param_model.batch_size
         return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=(mode=="train"))
 
     def train_dataloader(self, is_print=False):
@@ -59,6 +62,8 @@ class sensorsLoader():
         amounts = len(self.all_ppg)
         sbps = self.bp_denorm(self._target_data[:,0], self.config, 'SP')
         dbps = self.bp_denorm(self._target_data[:,1], self.config, 'DP')
+
+        
 
         if is_print:
             print("Loader length: ", amounts)
@@ -103,6 +108,10 @@ class sensorsLoader():
         all_sbp = []
         all_dbp = []
 
+        # check if abp signal exist -> if not insert dummy
+        if not 'abp_signal' in list(self.data_df.columns):
+            self.data_df['abp_signal'] = self.data_df['signal']
+
         # get ppg
         all_ppg  = np.stack(self.data_df["signal"].values)
         all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in all_ppg])
@@ -145,6 +154,12 @@ class sensorsLoader():
         else:
             self.all_ppg = all_ppg
         
+        # if self.config.param_loader.get('spectrogram'):
+        #     tfm = Spectrogram(n_fft=self.config.param_loader.spectrogram.n_fft, 
+        #                       hop_length=self.config.param_loader.spectrogram.hop_len, 
+        #                       onesided=self.config.param_loader.spectrogram.onesided)
+        #     self.all_spec = tfm(torch.from_numpy(self.all_ppg.squeeze(1)))
+
         all_abp = self.bp_norm(np.stack(self.data_df["abp_signal"].values), self.config, type="SP")
 
         all_sbp = self.bp_norm(np.stack(self.data_df["SP"].values).reshape(-1,1), self.config, type="SP")
@@ -158,12 +173,14 @@ class sensorsLoader():
 
     def __getitem__(self, index):
         # Non-signal data
-        ppg = self.all_ppg[index]
+        signal = {'ppg': self.all_ppg[index]}
+        # if self.config.param_loader.get('spectrogram'):
+        #     signal['spec'] = self.all_spec[index]
         abp = self.all_abp[index]
         y = self._target_data[index]
         
         peakmask, vlymask = get_bp_pk_vly_mask(abp.reshape(-1))
-        return ppg, y, abp, peakmask, vlymask
+        return signal, y, abp, peakmask, vlymask
 
 #%%
 if __name__=='__main__':
