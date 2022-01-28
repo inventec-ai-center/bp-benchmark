@@ -14,7 +14,7 @@ exp:
     exp_name: "sensors-dataset2"
     # run_name: "sensors-dataset2"
     # split_type: "cross-subject"
-    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_split_cons_df.pkl' # mix_split_df.pkl
+    subject_dict: '/sensorsbp/processed_mimic3/sensors_dataset/all_sensors_data_bw4_bsr_5s_df.pkl'
 
 # --------------------------------------------------------------------------------------------------
 # features & labels
