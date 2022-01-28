@@ -1,6 +1,7 @@
 #%%
 from core.utils import log_params_mlflow, log_hydra_mlflow
-from core.solver import Solver
+from core.solver import Solver as solver_w2w
+from core.solver_w2l import Solver as solver_w2l
 from time import time, ctime
 
 import coloredlogs, logging
@@ -19,7 +20,7 @@ from mlflow.tracking.client import MlflowClient
 
 
 #%%
-@hydra.main(config_path='./core/config/hydra', config_name="unet_uci_5s")
+@hydra.main(config_path='./core/config/hydra', config_name="unet_bcg_5s")
 def main(config):
     # =============================================================================
     # check config have been run
@@ -72,7 +73,10 @@ def main(config):
     # =============================================================================
     # Setup Solver
     # =============================================================================
-    solver = Solver(config)
+    if config.exp.model_type=='unet1d':
+        solver = solver_w2w(config)
+    elif config.exp.model_type=='resnet1d':
+        solver = solver_w2l(config)
 
 #%%
     # =============================================================================
