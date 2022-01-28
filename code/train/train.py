@@ -8,7 +8,8 @@ import os
 import argparse
 import numpy as np 
 
-from core.solver import Solver
+from core.solver import Solver as solver_w2w
+from core.solver_w2l import Solver as solver_w2l
 from core.utils import log_params_mlflow, init_mlflow
 from omegaconf import OmegaConf
 from time import time, ctime
@@ -36,7 +37,10 @@ def main(args):
 
     time_start = time()
     config = OmegaConf.load(args.config_file)
-    solver = Solver(config)
+    if config.exp.model_type=='unet1d':
+        solver = solver_w2w(config)
+    elif config.exp.model_type=='resnet1d':
+        solver = solver_w2l(config)
     init_mlflow(config)
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
         log_params_mlflow(config)
