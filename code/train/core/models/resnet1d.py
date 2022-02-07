@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .base_pl import Regressor
-from mdnc import mdnc
 from .resnet import MyConv1dPadSame, MyMaxPool1dPadSame, BasicBlock
 import coloredlogs, logging
 coloredlogs.install()
