@@ -5,7 +5,7 @@ RUN mkdir /sensorsbp
 COPY ./ /sensorsbp
 WORKDIR /sensorsbp
 
-RUN apt-get undate && apt-get install git
+RUN apt-get update -y && apt-get install git -y
 
 # pip install
 RUN pip install Cython==0.29.26
