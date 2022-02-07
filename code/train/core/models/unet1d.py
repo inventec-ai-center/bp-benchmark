@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .base_pl import Regressor
-from mdnc import mdnc
+import mdnc
 
 #%%
 class Unet1d(Regressor):
