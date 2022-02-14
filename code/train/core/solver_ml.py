@@ -1,14 +1,11 @@
 #%%
 import os
 import joblib
-from shutil import rmtree
-import pandas as pd
 import numpy as np 
-from omegaconf import OmegaConf
 
 # Load loaders
 from core.loaders import *
-from core.utils import (get_nested_fold_idx, cal_metric, cal_statistics)
+from core.utils import cal_metric
 from core.solver import Solver
 
 # Load model
@@ -17,7 +14,6 @@ from core.models import *
 # Others
 import mlflow as mf
 import coloredlogs, logging
-from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -26,6 +22,15 @@ logger = logging.getLogger(__name__)
 
 #%%
 class SolverML(Solver):
+    def _get_model(self):
+        if self.config.exp.model_type == "lgbm":
+            model = lgbModel(self.config.param_model, self.config.exp.random_state)
+        elif self.config.exp.model_type == "rf":
+            model = lgbModel(self.config.param_model, random_state=self.config.exp.random_state)
+        else:
+            model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
+        return model
+        
     def get_cv_metrics(self, fold_errors, dm, model, mode="val"):
         target = self.config.param_loader.label # sbp, dbp
 
@@ -40,14 +45,14 @@ class SolverML(Solver):
         x, y = loader.dataset.all_ppg, loader.dataset.all_label.reshape(-1)
 
         # prediction
-        pred_bp = bp_denorm(model.evaluate(x), self.config, target)
+        pred_bp = bp_denorm(model.evaluate(x), target)
 
         # gorund truth
-        true_bp = bp_denorm(y, self.config, target)
+        true_bp = bp_denorm(y, target)
 
         # naive
         naive_bp =  np.mean(dm.train_dataloader(is_print=False).dataset.all_label, axis=0)
-        naive_bp = bp_denorm(naive_bp, self.config, target)
+        naive_bp = bp_denorm(naive_bp, target)
 
         # error
         bp_err = pred_bp - true_bp
@@ -66,30 +71,29 @@ class SolverML(Solver):
         target = self.config.param_loader.label # sbp, dbp
         fold_errors_template = {"subject_id":[],
                                 "record_id": [],
-                                "sbp_naive":[],
-                                "sbp_pred":[],
-                                "sbp_label":[],
-                                "dbp_naive":[],
-                                "dbp_pred":[],
-                                "dbp_label":[]}
+                                f"{target}_naive":[],
+                                f"{target}_pred":[],
+                                f"{target}_label":[]
+                                }
+        
         fold_errors = {f"{mode}_{k}":[] for k,v in fold_errors_template.items() for mode in ["tr", "val","ts"]}
+        
         # =============================================================================
         # data module
         # =============================================================================
-        # dm = WavDataModule(self.config)
         dm = self._get_loader()
 
-        # Nested cv 
+        
         all_split_df = joblib.load(self.config.exp.subject_dict)
-        self.config = cal_statistics(self.config, all_split_df)
-        for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
-            if (self.config.exp.N_fold=='HOO') and (foldIdx==1):  break
-            train_df = pd.concat(np.array(all_split_df)[folds_train])
-            val_df = pd.concat(np.array(all_split_df)[folds_val])
-            test_df = pd.concat(np.array(all_split_df)[folds_test])
+        # Nested cv 
+        for foldIdx in range(self.config.exp.N_fold):
+            if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
+            train_df = all_split_df[foldIdx]['train']
+            val_df = all_split_df[foldIdx]['val']
+            test_df = all_split_df[foldIdx]['test']
             
             dm.setup_kfold(train_df, val_df, test_df)
-
+            
             # Init model
             model = self._get_model()
            
@@ -99,7 +103,7 @@ class SolverML(Solver):
                 x = dm.train_dataloader().dataset.all_ppg
                 y = dm.train_dataloader().dataset.all_label.reshape(-1)
 
-                model = ToyModel(self.config.param_model)
+                # model = ToyModel(self.config.param_model)
                 model.fit(x,y)
 
                 metrics = {}
@@ -126,34 +130,3 @@ class SolverML(Solver):
 
         return out_metric
 
-
-#%%
-if __name__=='__main__':
-    import os
-    os.chdir('/sensorsbp/code/train')
-    from omegaconf import OmegaConf
-
-    config = OmegaConf.load("/sensorsbp/code/train/core/config/toyml_uci_5s.yaml")
-    solver = SolverML(config)
-    self = solver
-
-    dm = FeatDataModule(config)
-    all_split_df = joblib.load(self.config.exp.subject_dict)
-    self.config = cal_statistics(self.config, all_split_df)
-    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
-        if (self.config.exp.N_fold==3) and (foldIdx==1):  break
-        train_df = pd.concat(np.array(all_split_df)[folds_train])
-        val_df = pd.concat(np.array(all_split_df)[folds_val])
-        test_df = pd.concat(np.array(all_split_df)[folds_test])
-        
-        dm.setup_kfold(train_df, val_df, test_df)
-    
-    for i, (x,y) in enumerate(dm.train_dataloader()):
-        print(x.shape, y.shape)
-    
-    x = x.numpy()
-    y = y.numpy()
-
-    model = ToyModel(config.param_model)
-    model.fit(x,y)
-    pred = model.evaluate(x)
