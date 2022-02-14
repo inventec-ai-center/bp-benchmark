@@ -3,7 +3,7 @@ import joblib
 import random
 import pandas as pd
 import numpy as np
-from core.utils import (print_criterion, get_bp_pk_vly_mask, get_nested_fold_idx,
+from core.utils import (global_denorm, print_criterion, get_bp_pk_vly_mask, get_nested_fold_idx,
                         glob_dez, glob_z, glob_demm, glob_mm, 
                         loc_dez, loc_z, loc_demm, loc_mm)
 from random import sample
@@ -78,6 +78,9 @@ class sensorsLoader():
         elif self.config.param_loader.ppg_norm=='glob_mm':
             self.ppg_norm = glob_mm  
             self.ppg_denorm = glob_demm  
+        else:
+            self.ppg_norm = None
+            self.ppg_denorm = None 
         
         if self.config.param_loader.bp_norm=='loc_z':
             self.bp_norm = loc_z
@@ -91,15 +94,32 @@ class sensorsLoader():
         elif self.config.param_loader.bp_norm=='glob_mm':
             self.bp_norm = glob_mm
             self.bp_denorm = glob_demm
+        else:
+            self.bp_norm = None 
+            self.bp_denorm = global_denorm
 
     def _get_signal_feature(self):
         target = self.config.param_loader.label
 
+        # select feature by importance
+        file_path = self.config.exp.feat_importance if target=='SP' else self.config.exp.feat_importance.replace('-SP', '-DP')
+        df_imp = pd.read_pickle(file_path)
+        sorted_feat = df_imp.features.values
+        len_features = len(sorted_feat)
+        features = sorted_feat[:int(len_features*self.config.param_loader['rate_features'])]
+        
         # get ppg
-        all_ppg = self.data_df.loc[:, ~self.data_df.columns.isin(['patient','trial','SP', 'DP','part'])]
+        # all_ppg = self.data_df.loc[:, ~self.data_df.columns.isin(['patient','trial','SP', 'DP','part'])]
+        all_ppg = self.data_df[features]
         all_ppg = all_ppg.fillna(0).values
-        self.all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in all_ppg])
-        self.all_label = self.bp_norm(np.stack(self.data_df[target].values).reshape(-1,1), self.config, type=target)
+        
+        self.all_ppg = np.array(all_ppg)
+        self.all_label = np.stack(self.data_df[target].values).reshape(-1,1)
+        
+        if not self.ppg_norm is None:
+            self.all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in self.all_ppg])
+        if not self.bp_norm is None:
+            self.all_label = self.bp_norm(self.all_label, self.config, type=target)
         
         self.subjects = list(self.data_df['patient']) 
         self.records = list(self.data_df['trial']) 
