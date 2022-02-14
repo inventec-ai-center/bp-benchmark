@@ -39,8 +39,8 @@ def get_ckpt(r):
 
 #%% Global Normalization
 def global_norm(x, signal_type): 
-    if signal_type == "SP": (x_min, x_max) = (60, 200)   # mmHg
-    elif signal_type == "DP": (x_min, x_max) = (30, 110)   # mmHg
+    if signal_type == "SP": (x_min, x_max) = (80, 200)   # mmHg
+    elif signal_type == "DP": (x_min, x_max) = (50, 110)   # mmHg
     elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
     else: return None
 
@@ -48,8 +48,8 @@ def global_norm(x, signal_type):
     return (x - x_min) / (x_max - x_min)
     
 def global_denorm(x, signal_type):
-    if signal_type == "SP": (x_min, x_max) = (60, 200)   # mmHg
-    elif signal_type == "DP": (x_min, x_max) = (30, 110)   # mmHg
+    if signal_type == "SP": (x_min, x_max) = (80, 200)   # mmHg
+    elif signal_type == "DP": (x_min, x_max) = (50, 110)   # mmHg
     elif signal_type == "ptt": (x_min, x_max) = (100, 900)  # 100ms - 900ms
     else: return None
 
@@ -191,7 +191,7 @@ def get_bp_pk_vly_mask(data):
         vly_mask[vlys] = 1
 
     except:
-        print("!!! No peaks and vlys found for peak_vly_mask !!!")
+        # print("!!! No peaks and vlys found for peak_vly_mask !!!")
         pk_mask = np.zeros_like(data)
         vly_mask = np.zeros_like(data)
     
