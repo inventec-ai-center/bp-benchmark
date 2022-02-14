@@ -3,7 +3,7 @@ import joblib
 import random
 import pandas as pd
 import numpy as np
-from core.utils import (global_denorm, print_criterion, get_bp_pk_vly_mask, get_nested_fold_idx,
+from core.utils import (global_denorm, get_nested_fold_idx,
                         glob_dez, glob_z, glob_demm, glob_mm, 
                         loc_dez, loc_z, loc_demm, loc_mm)
 from random import sample
