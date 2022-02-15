@@ -102,8 +102,15 @@ class sensorsLoader():
         target = self.config.param_loader.label
 
         # select feature by importance
-        file_path = self.config.exp.feat_importance if target=='SP' else self.config.exp.feat_importance.replace('-SP', '-DP')
-        df_imp = pd.read_pickle(file_path)
+        if self.config.exp.model_type=='mlp':
+            ft_imp_SP = pd.read_pickle(self.config.exp.feat_importance) 
+            ft_imp_DP = pd.read_pickle(self.config.exp.feat_importance.replace('-SP', '-DP'))
+            ft_total= ft_imp_SP.merge(ft_imp_DP,on='features')
+            ft_total['importance'] = (ft_total['importance_x']+ft_total['importance_y'])/2
+            df_imp = ft_total[['features','importance']].sort_values('importance',ascending=False)
+        else:    
+            file_path = self.config.exp.feat_importance if target=='SP' else self.config.exp.feat_importance.replace('-SP', '-DP')
+            df_imp = pd.read_pickle(file_path)
         sorted_feat = df_imp.features.values
         len_features = len(sorted_feat)
         features = sorted_feat[:int(len_features*self.config.param_loader['rate_features'])]
@@ -114,8 +121,7 @@ class sensorsLoader():
         all_ppg = all_ppg.fillna(0).values
         
         self.all_ppg = np.array(all_ppg)
-        self.all_label = np.stack(self.data_df[target].values).reshape(-1,1)
-        
+        self.all_label = np.stack(self.data_df[target].values)#.reshape(-1,1)
         if not self.ppg_norm is None:
             self.all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in self.all_ppg])
         if not self.bp_norm is None:
