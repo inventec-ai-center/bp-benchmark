@@ -8,7 +8,7 @@ exp:
   model_type: mlp
   data_name: ppgbp
   exp_name: ${exp.data_name}-${exp.model_type}
-  subject_dict: /sensorsbp/sergio_pl/data/paper/splits/${exp.data_name}_bw_bsr_5s_split_norm.pkl
+  subject_dict: /sensorsbp/sergio_pl/data/paper/splits/${exp.data_name}_bw_bsr_2s_split_norm.pkl
   feat_importance: /sensorsbp/sergio_pl/data/paper/${exp.data_name}-featImportance-SP.pkl
   loader: feature
   cv: cv
@@ -19,7 +19,7 @@ param_loader:
   - None
   ppg_norm: None
   bp_norm: None
-  label: DP
+  label: ['SP', 'DP']
   rate_features: 0.1
 objective:
   type: val_mae

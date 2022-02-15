@@ -19,7 +19,7 @@ param_loader:
   - None
   ppg_norm: None
   bp_norm: None
-  label: DP
+  label: ['SP', 'DP']
   rate_features: 0.1
 objective:
   type: val_mae

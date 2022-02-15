@@ -19,8 +19,8 @@ param_loader:
   - None
   ppg_norm: None
   bp_norm: None
-  label: DP
-  rate_features: 0.25
+  label: ['SP', 'DP']
+  rate_features: 0.05
 objective:
   type: val_mae
   mode: min
@@ -38,7 +38,7 @@ param_early_stop:
   verbose: true
   mode: ${objective.mode}
 param_model:
-  hidden: 32
+  hidden: [256,64]
 logger:
   param_ckpt:
     monitor: ${objective.type}
