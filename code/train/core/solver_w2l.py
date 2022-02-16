@@ -103,7 +103,7 @@ class Solver:
         # metrics = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, metric=metrics, mode=mode)
         metrics = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode=mode)
         
-
+        
         fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
         fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
         fold_errors[f"{mode}_sbp_pred"].append(pred_sbp)
@@ -249,6 +249,7 @@ class Solver:
             model.eval()
             trainer.model = model
             # get test output
+            val_outputs = trainer.validate(model=model, val_dataloaders=dm.val_dataloader(), verbose=False)
             test_outputs = trainer.test(model=model, test_dataloaders=dm.test_dataloader(), verbose=True)
             metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
             logger.info(f"\t {metrics}")
