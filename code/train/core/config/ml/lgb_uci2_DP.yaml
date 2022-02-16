@@ -47,6 +47,7 @@ param_model:
   min_samples: 50
   subsample: 0.7
   colsample_bytree: 1.0
+  n_workers: 10
 logger:
   param_ckpt:
     monitor: ${objective.type}
