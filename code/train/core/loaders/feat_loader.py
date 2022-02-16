@@ -116,9 +116,11 @@ class sensorsLoader():
         features = sorted_feat[:int(len_features*self.config.param_loader['rate_features'])]
         
         # get ppg
-        # all_ppg = self.data_df.loc[:, ~self.data_df.columns.isin(['patient','trial','SP', 'DP','part'])]
         all_ppg = self.data_df[features]
-        all_ppg = all_ppg.fillna(0).values
+        if not self.config.exp.model_type in ['lgb', 'rf']:
+            # since lightgbm package is able to handle NaN,
+            # lgb and rf models imported from the package are excluded
+            all_ppg = all_ppg.fillna(0).values
         
         self.all_ppg = np.array(all_ppg)
         self.all_label = np.stack(self.data_df[target].values)#.reshape(-1,1)
