@@ -176,6 +176,7 @@ class SolverML(Solver):
                 tmp_metric = cal_metric({'SP':sbp_err, 'DP':dbp_err}, mode=mode)
                 out_metric.update(tmp_metric)
         else:  
+            del train_df, test_df, val_df, model
             bp_err = fold_errors[f"ts_{target}_naive"] - fold_errors[f"ts_{target}_label"] 
             naive_metric = cal_metric({target:bp_err}, mode='nv')
             out_metric.update(naive_metric)
