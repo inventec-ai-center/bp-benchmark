@@ -19,8 +19,9 @@ from mlflow.tracking.client import MlflowClient
 
 
 #%%
-@hydra.main(config_path='./core/config/hydra', config_name="toyml_uci_5s")
+@hydra.main(config_path='./core/config/hydra/ml', config_name="lgb_sensors_SP")
 def main(config):
+    target = config.param_loader.label
     # =============================================================================
     # check config have been run
     # =============================================================================
@@ -54,9 +55,9 @@ def main(config):
             params = run.data.params
             metrics = run.data.metrics
             if params==fake_run_params and run_info.status=="FINISHED":
-                logger.warning(f'Find Exist Run with ts/sbp_mae: {round(metrics["ts/sbp_mae"],3)}')
+                logger.warning(f'Find Exist Run with ts/sbp_mae: {round(metrics[f"ts/{target}_mae"],3)}')
                 client.delete_run(fake_run_id)
-                return metrics["ts/sbp_mae"]
+                return metrics[f"ts/{target}_mae"]
         client.delete_run(fake_run_id)
 
 
@@ -75,6 +76,9 @@ def main(config):
     solver = SolverML(config)
 
 #%%
+    # =============================================================================
+    # Run
+    # =============================================================================
     mf.set_tracking_uri(MLRUNS_DIR)
     mf.set_experiment(config.exp.exp_name)
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
@@ -85,7 +89,7 @@ def main(config):
         
     time_now = time()
     logger.warning(f"{config.exp.exp_name} Time Used: {ctime(time_now-time_start)}")
-    return cv_metrics["ts/sbp_mae"]
+    return cv_metrics[f"ts/{target}_mae"]
 
 
 #%%
