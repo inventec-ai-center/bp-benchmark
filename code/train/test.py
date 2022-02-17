@@ -4,8 +4,8 @@ import argparse
 
 from time import time, ctime
 from omegaconf import OmegaConf
-from core.solver import Solver as solver_w2w
-from core.solver_w2l import SolverW2l as solver_w2l
+from core.solver_s2s import Solver as solver_s2s
+from core.solver_s2l import SolverS2l as solver_s2l
 
 import coloredlogs, logging
 coloredlogs.install()
@@ -25,9 +25,9 @@ def main(args):
     time_start = time()
     config = OmegaConf.load(args.config_file)
     if config.exp.model_type=='unet1d':
-        solver = solver_w2w(config)
+        solver = solver_s2s(config)
     elif config.exp.model_type=='resnet1d':
-        solver = solver_w2l(config)
+        solver = solver_s2l(config)
 
     solver.test()
     time_now = time()

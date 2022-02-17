@@ -7,7 +7,7 @@ import numpy as np
 
 # Load loaders
 from core.loaders import *
-from core.solver import Solver
+from core.solver_s2s import Solver
 from core.utils import (get_nested_fold_idx, get_ckpt, cal_metric, cal_statistics)
 
 # Load model
@@ -27,7 +27,7 @@ coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
 #%%
-class SolverW2l(Solver):
+class SolverS2l(Solver):
     def _get_model(self, ckpt_path_abs=None):
         model = None
         if not ckpt_path_abs:
