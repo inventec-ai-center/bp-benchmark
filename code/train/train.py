@@ -3,7 +3,7 @@ import argparse
 
 # Load modules
 from core.solver import Solver as solver_w2w
-from core.solver_w2l import Solver as solver_w2l
+from core.solver_w2l import SolverW2l as solver_w2l
 from core.solver_ml import SolverML as solver_f2l
 from core.utils import log_params_mlflow, init_mlflow
 
