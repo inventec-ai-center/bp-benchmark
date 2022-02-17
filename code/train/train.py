@@ -1,17 +1,12 @@
-# import argparse
-# from pathlib import Path
-# from core.config.config import GeneralConfig
-# from core.wound_core import WoundCore
-
-
 import os
 import argparse
-import numpy as np 
 
+# Load modules
 from core.solver import Solver as solver_w2w
 from core.solver_w2l import Solver as solver_w2l
 from core.solver_ml import SolverML as solver_f2l
 from core.utils import log_params_mlflow, init_mlflow
+
 from omegaconf import OmegaConf
 from time import time, ctime
 import mlflow as mf
@@ -38,12 +33,16 @@ def main(args):
 
     time_start = time()
     config = OmegaConf.load(args.config_file)
+    
+    #--- get the solver
     if config.exp.model_type=='unet1d':
         solver = solver_w2w(config)
     elif config.exp.model_type=='resnet1d':
         solver = solver_w2l(config)
     else:
         solver = solver_f2l(config)
+    
+    #--- training and logging into mlflow
     init_mlflow(config)
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
         log_params_mlflow(config)
@@ -53,13 +52,9 @@ def main(args):
     time_now = time()
     logger.warning(f"Time Used: {ctime(time_now-time_start)}")
 
-    # =============================================================================
-    # output
-    # =============================================================================
+    #--- remove automatically generated folder, since models are saved in mlflow folder
     pytorch_lightning_ckpt_dir = Path("./lightning_logs/")
     if pytorch_lightning_ckpt_dir.exists(): rmtree(pytorch_lightning_ckpt_dir)
-
-
 
 
 
