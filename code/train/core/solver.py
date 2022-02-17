@@ -206,7 +206,6 @@ class Solver:
             dm.setup_kfold(train_df, val_df, test_df)
 
             #--- load trained model
-            model = self._get_model()
             trainer = MyTrainer()
 
             model = self._get_model(ckpt_path_abs=self.config.param_test.model_path[foldIdx])
