@@ -119,8 +119,6 @@ class SolverW2l(Solver):
 
                 # load best ckpt
                 ckpt_path_abs = str(Path(artifact_uri)/ckpt_path[0])
-                # if ":" in ckpt_path_abs:
-                #     ckpt_path_abs = ckpt_path_abs.split(":",1)[1]
                 model = self._get_model(ckpt_path_abs=ckpt_path_abs)
 
                 # evaluate
