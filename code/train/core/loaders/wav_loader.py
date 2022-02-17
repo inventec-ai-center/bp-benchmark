@@ -1,18 +1,11 @@
 #%%
-import joblib
-import random
-import pandas as pd
 import numpy as np
-from core.utils import (print_criterion, get_bp_pk_vly_mask, get_nested_fold_idx,
+from core.utils import (print_criterion, get_bp_pk_vly_mask,
                         glob_dez, glob_z, glob_demm, glob_mm, 
                         loc_dez, loc_z, loc_demm, loc_mm)
-from random import sample
-from omegaconf import OmegaConf
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-# from torchaudio.transforms import Spectrogram
-# import torch
 
 class WavDataModule(pl.LightningDataModule):
     def __init__(self, config):
@@ -62,8 +55,6 @@ class sensorsLoader():
         amounts = len(self.all_ppg)
         sbps = self.bp_denorm(self._target_data[:,0], self.config, 'SP')
         dbps = self.bp_denorm(self._target_data[:,1], self.config, 'DP')
-
-        
 
         if is_print:
             print("Loader length: ", amounts)
@@ -154,12 +145,6 @@ class sensorsLoader():
         else:
             self.all_ppg = all_ppg
         
-        # if self.config.param_loader.get('spectrogram'):
-        #     tfm = Spectrogram(n_fft=self.config.param_loader.spectrogram.n_fft, 
-        #                       hop_length=self.config.param_loader.spectrogram.hop_len, 
-        #                       onesided=self.config.param_loader.spectrogram.onesided)
-        #     self.all_spec = tfm(torch.from_numpy(self.all_ppg.squeeze(1)))
-
         all_abp = self.bp_norm(np.stack(self.data_df["abp_signal"].values), self.config, type="SP")
 
         all_sbp = self.bp_norm(np.stack(self.data_df["SP"].values).reshape(-1,1), self.config, type="SP")
@@ -174,31 +159,8 @@ class sensorsLoader():
     def __getitem__(self, index):
         # Non-signal data
         signal = {'ppg': self.all_ppg[index]}
-        # if self.config.param_loader.get('spectrogram'):
-        #     signal['spec'] = self.all_spec[index]
         abp = self.all_abp[index]
         y = self._target_data[index]
         
         peakmask, vlymask = get_bp_pk_vly_mask(abp.reshape(-1))
         return signal, y, abp, peakmask, vlymask
-
-#%%
-if __name__=='__main__':
-    import joblib
-    from core.utils import cal_statistics
-    config = OmegaConf.load('/sensorsbp/code/train/core/config/unet_sensors_12s.yaml')
-    all_split_df = joblib.load(config.exp.subject_dict)
-    config= cal_statistics(config, all_split_df)
-
-
-    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(5)):
-        if foldIdx==0:  break
-    train_df = pd.concat(np.array(all_split_df)[folds_train])
-    val_df = pd.concat(np.array(all_split_df)[folds_val])
-    test_df = pd.concat(np.array(all_split_df)[folds_test])
-
-    dm = WavDataModule(config)
-    dm.setup_kfold(train_df, val_df, test_df)
-    # dm.train_dataloader()
-    # dm.val_dataloader()
-    # dm.test_dataloader()
