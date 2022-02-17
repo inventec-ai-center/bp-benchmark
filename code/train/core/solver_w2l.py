@@ -60,7 +60,7 @@ class SolverW2l(Solver):
         err_dict = {}
         for i, tar in enumerate(['SP', 'DP']):
             tar_acrny = 'sbp' if tar=='SP' else 'dbp'
-            pred_bp = pred[:,i]
+            pred_bp = bp_denorm(pred[:,i], self.config, tar)
             true_bp = bp_denorm(true[:,i], self.config, tar)
             naive_bp = bp_denorm(naive[i], self.config, tar)
 
@@ -87,13 +87,11 @@ class SolverW2l(Solver):
                                 "dbp_pred":[],
                                 "dbp_label":[]}
         fold_errors = {f"{mode}_{k}":[] for k,v in fold_errors_template.items() for mode in ["val","test"]}
-        # =============================================================================
-        # data module
-        # =============================================================================
-        # dm = WavDataModule(self.config)
+        
+        #--- Data module
         dm = self._get_loader()
 
-        # Nested cv 
+        #--- Nested cv 
         all_split_df = joblib.load(self.config.exp.subject_dict)
         self.config = cal_statistics(self.config, all_split_df)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
@@ -104,14 +102,14 @@ class SolverW2l(Solver):
             
             dm.setup_kfold(train_df, val_df, test_df)
 
-            # Init model
+            #--- Init model
             model = self._get_model()
             early_stop_callback = EarlyStopping(**dict(self.config.param_early_stop))
             checkpoint_callback = ModelCheckpoint(**dict(self.config.logger.param_ckpt))
             lr_logger = LearningRateMonitor()
             trainer = MyTrainer(**dict(self.config.param_trainer), callbacks=[early_stop_callback, checkpoint_callback, lr_logger ])
 
-            # trainer main loop
+            #--- trainer main loop
             mf.pytorch.autolog()
             with mf.start_run(run_name=f"cv{foldIdx}", nested=True) as run:
                 # train
@@ -141,9 +139,8 @@ class SolverW2l(Solver):
                 metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
                 logger.info(f"\t {metrics}")
                 mf.log_metrics(metrics)
-                # log_config(self.config_file)
 
-            # Save to model directory
+            #--- Save to model directory
             os.makedirs(self.config.path.model_directory, exist_ok=True)
             trainer.save_checkpoint("{}/{}-fold{}-test_sp={:.3f}-test_dp={:.3f}.ckpt".format(
                                                                            self.config.path.model_directory,
@@ -152,22 +149,19 @@ class SolverW2l(Solver):
                                                                            metrics["test/sbp_mae"],
                                                                            metrics["test/dbp_mae"]))
 
+        #--- compute final metric
         out_metric = {}
         fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
-        sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
-        dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
-        naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
+        err_dict = {tar: fold_errors[f"test_{tar}_naive"] - fold_errors[f"test_{tar}_label"] \
+                    for tar in ['sbp', 'dbp']}
+        naive_metric = cal_metric(err_dict, mode='nv')
         out_metric.update(naive_metric)
-
-        sbp_err = fold_errors["val_sbp_pred"] - fold_errors["val_sbp_label"] 
-        dbp_err = fold_errors["val_dbp_pred"] - fold_errors["val_dbp_label"] 
-        val_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='val')
-        out_metric.update(val_metric)
-
-        sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
-        dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
-        test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
-        out_metric.update(test_metric)
+        
+        for mode in ['val', 'test']:
+            err_dict = {tar: fold_errors[f"{mode}_{tar}_pred"] - fold_errors[f"{mode}_{tar}_label"] \
+                        for tar in ['sbp', 'dbp']}
+            tmp_metric = cal_metric(err_dict, mode=mode)
+            out_metric.update(tmp_metric)
         
         return out_metric
     
@@ -180,21 +174,11 @@ class SolverW2l(Solver):
             fold_errors_template[f"{tar}_pred"] = []
             fold_errors_template[f"{tar}_label"] = []
             
-        # fold_errors_template = {"subject_id":[],
-        #                         "record_id": [],
-        #                         "sbp_naive":[],
-        #                         "sbp_pred":[],
-        #                         "sbp_label":[],
-        #                         "dbp_naive":[],
-        #                         "dbp_pred":[],
-        #                         "dbp_label":[]}
         fold_errors = {f"{mode}_{k}":[] for k,v in fold_errors_template.items() for mode in ["test"]}
-        # =============================================================================
-        # data module
-        # =============================================================================
-        # dm = WavDataModule(self.config)
+        
+        #--- Data module
         dm = self._get_loader()
-        # Nested cv 
+        #--- Nested cv 
         all_split_df = joblib.load(self.config.exp.subject_dict)
         self.config = cal_statistics(self.config, all_split_df)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
@@ -205,19 +189,20 @@ class SolverW2l(Solver):
             
             dm.setup_kfold(train_df, val_df, test_df)
 
-            # load trained model
-            model = self._get_model()
+            #--- load trained model
             trainer = MyTrainer()
 
             model = self._get_model(ckpt_path_abs=self.config.param_test.model_path[foldIdx])
             model.eval()
             trainer.model = model
-            # get test output
+            
+            #--- get test output
             val_outputs = trainer.validate(model=model, val_dataloaders=dm.val_dataloader(), verbose=False)
             test_outputs = trainer.test(model=model, test_dataloaders=dm.test_dataloader(), verbose=True)
             metrics = self.get_cv_metrics(fold_errors, dm, model, test_outputs, mode="test")
             logger.info(f"\t {metrics}")
 
+        #--- compute final metric
         results['fold_errors'] = fold_errors    
         out_metric = {}
         fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
@@ -235,22 +220,4 @@ class SolverW2l(Solver):
         results['out_metric'] = out_metric 
         joblib.dump(results, self.config.param_test.save_path)  
         
-        
-        
-        
-        # out_metric = {}
-        # fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
-        # sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
-        # dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
-        # naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
-        # out_metric.update(naive_metric)
-
-        # sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
-        # dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
-        # test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
-        # out_metric.update(test_metric)
-        
-        # results['out_metric'] = out_metric 
-        # joblib.dump(results, self.config.param_test.save_path)   
-
         print(out_metric)  
