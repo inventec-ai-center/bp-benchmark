@@ -1,13 +1,8 @@
 #%%
-import joblib
-import random
 import pandas as pd
 import numpy as np
-from core.utils import (global_denorm, get_nested_fold_idx,
-                        glob_dez, glob_z, glob_demm, glob_mm, 
+from core.utils import (global_denorm, glob_dez, glob_z, glob_demm, glob_mm, 
                         loc_dez, loc_z, loc_demm, loc_mm)
-from random import sample
-from omegaconf import OmegaConf
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
@@ -123,7 +118,7 @@ class sensorsLoader():
             all_ppg = all_ppg.fillna(0).values
         
         self.all_ppg = np.array(all_ppg)
-        self.all_label = np.stack(self.data_df[target].values)#.reshape(-1,1)
+        self.all_label = np.stack(self.data_df[target].values)
         if not self.ppg_norm is None:
             self.all_ppg = np.array([self.ppg_norm(ppg, self.config, type='ppg') for ppg in self.all_ppg])
         if not self.bp_norm is None:
@@ -138,28 +133,3 @@ class sensorsLoader():
         y = self.all_label[index]
         
         return ppg, y
-
-#%%
-if __name__=='__main__':
-    import joblib
-    from core.utils import cal_statistics
-    config = OmegaConf.load('/sensorsbp/code/train/core/config/hydra/toyml_uci_5s.yaml')
-    all_split_df = joblib.load(config.exp.subject_dict)
-    config= cal_statistics(config, all_split_df)
-
-
-    for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(3)):
-        if foldIdx==0:  break
-    train_df = pd.concat(np.array(all_split_df)[folds_train])
-    val_df = pd.concat(np.array(all_split_df)[folds_val])
-    test_df = pd.concat(np.array(all_split_df)[folds_test])
-
-    dm = FeatDataModule(config)
-    dm.setup_kfold(train_df, val_df, test_df)
-    # dm.train_dataloader()
-    # dm.val_dataloader()
-    # dm.test_dataloader()
-
-    # ppg, y, abp, peakmask, vlymask = next(iter(dm.test_dataloader().dataset))
-    for i, (ppg, y) in enumerate(dm.test_dataloader()):
-        print(ppg.shape)
