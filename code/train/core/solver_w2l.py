@@ -4,19 +4,17 @@ import joblib
 from shutil import rmtree
 import pandas as pd
 import numpy as np 
-from omegaconf import OmegaConf
 
 # Load loaders
 from core.loaders import *
-# from core.loaders.wav_loader import WavDataModule
-from core.utils import (get_nested_fold_idx, get_ckpt, compute_sp_dp, cal_metric, cal_statistics, log_config)
+from core.solver import Solver
+from core.utils import (get_nested_fold_idx, get_ckpt, cal_metric, cal_statistics)
 
 # Load model
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.callbacks import ModelCheckpoint, StochasticWeightAveraging
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks import LearningRateMonitor
 from core.models import *
-import torch
 
 # Others
 import mlflow as mf
@@ -29,44 +27,18 @@ coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
 #%%
-class Solver:
-    DEFAULTS = {}   
-    def __init__(self, config):
-        # Initialize
-        # self.config_file = config_file
-        # self.config = OmegaConf.load(self.config_file)
-        self.config = config 
-
-    def _get_loader(self):
-        if self.config.exp.loader=="waveform":
-            return WavDataModule(self.config)
-        elif self.config.exp.loader=="feature":
-            return FeatDataModule(self.config)
-
-
-    def _get_model(self, pos_weight=None, ckpt_path_abs=None):
+class SolverW2l(Solver):
+    def _get_model(self, ckpt_path_abs=None):
         model = None
         if not ckpt_path_abs:
-            if self.config.exp.model_type == "toy_model":
-                model = ToyModel(self.config.param_model, self.config.exp.random_state)
-            elif self.config.exp.model_type == "unet1d":
-                model = Unet1d(self.config.param_model, random_state=self.config.exp.random_state)
-            elif self.config.exp.model_type == "resnet1d":
+            if self.config.exp.model_type == "resnet1d":
                 model = Resnet1d(self.config.param_model, random_state=self.config.exp.random_state)
-            elif self.config.exp.model_type == "rsntGru1d":
-                model = RsntGru(self.config.param_model, random_state=self.config.exp.random_state)
             else:
                 model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
             return model
         else:
-            if self.config.exp.model_type == "toy_model":
-                model = ToyModel.load_from_checkpoint(ckpt_path_abs)
-            elif self.config.exp.model_type == "unet1d":
-                model = Unet1d.load_from_checkpoint(ckpt_path_abs)
-            elif self.config.exp.model_type == "resnet1d":
+            if self.config.exp.model_type == "resnet1d":
                 model = Resnet1d.load_from_checkpoint(ckpt_path_abs)
-            elif self.config.exp.model_type == "rsntGru1d":
-                model = RsntGru.load_from_checkpoint(ckpt_path_abs)
             else:
                 model = eval(self.config.exp.model_type).load_from_checkpoint(ckpt_path_abs)
             return model
@@ -79,39 +51,28 @@ class Solver:
 
         bp_denorm = loader.dataset.bp_denorm
 
-        # prediction
-        pred_bp = outputs["pred_bp"].numpy()
-        pred_sbp = bp_denorm(pred_bp[:,0], self.config, 'SP')
-        pred_dbp = bp_denorm(pred_bp[:,1], self.config, 'DP')
-
-        # gorund truth
-        true_bp = outputs["true_bp"].numpy()
-        true_sbp = bp_denorm(true_bp[:,0], self.config, 'SP')
-        true_dbp = bp_denorm(true_bp[:,1], self.config, 'DP')
-
-        # naive
-        naive_bp =  np.mean(dm.train_dataloader(is_print=False).dataset._target_data, axis=0)
-        naive_sbp = bp_denorm(naive_bp[0], self.config, 'SP')
-        naive_dbp = bp_denorm(naive_bp[1], self.config, 'DP')
-
-        # error
-        sbp_err = pred_sbp - true_sbp
-        dbp_err = pred_dbp - true_dbp
-
-
-        # metrics = model._cal_metric(torch.tensor(outputs["pred_bp"]), torch.tensor(outputs["true_bp"]))
-        # metrics = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, metric=metrics, mode=mode)
-        metrics = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode=mode)
+        #--- Predict
+        pred = outputs["pred_bp"].numpy()
+        true = outputs["true_bp"].numpy()
+        naive =  np.mean(dm.train_dataloader(is_print=False).dataset._target_data, axis=0)
         
+        #--- Evaluate
+        err_dict = {}
+        for i, tar in enumerate(['SP', 'DP']):
+            tar_acrny = 'sbp' if tar=='SP' else 'dbp'
+            pred_bp = pred[:,i]
+            true_bp = bp_denorm(true[:,i], self.config, tar)
+            naive_bp = bp_denorm(naive[i], self.config, tar)
+
+            # error
+            err_dict[tar_acrny] = pred_bp - true_bp
+            fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
+            fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
+            fold_errors[f"{mode}_{tar_acrny}_pred"].append(pred_bp)
+            fold_errors[f"{mode}_{tar_acrny}_label"].append(true_bp)
+            fold_errors[f"{mode}_{tar_acrny}_naive"].append([naive_bp]*len(pred_bp))
         
-        fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
-        fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
-        fold_errors[f"{mode}_sbp_pred"].append(pred_sbp)
-        fold_errors[f"{mode}_sbp_label"].append(true_sbp)
-        fold_errors[f"{mode}_dbp_pred"].append(pred_dbp)
-        fold_errors[f"{mode}_dbp_label"].append(true_dbp)
-        fold_errors[f"{mode}_sbp_naive"].append([naive_sbp]*len(pred_bp))
-        fold_errors[f"{mode}_dbp_naive"].append([naive_dbp]*len(pred_bp))
+        metrics = cal_metric(err_dict, mode=mode)    
         
         return metrics
             
@@ -148,11 +109,7 @@ class Solver:
             early_stop_callback = EarlyStopping(**dict(self.config.param_early_stop))
             checkpoint_callback = ModelCheckpoint(**dict(self.config.logger.param_ckpt))
             lr_logger = LearningRateMonitor()
-            if self.config.get("param_swa"):
-                swa_callback = StochasticWeightAveraging(**dict(self.config.param_swa))
-                trainer = MyTrainer(**dict(self.config.param_trainer), callbacks=[early_stop_callback, checkpoint_callback, lr_logger ])
-            else:
-                trainer = MyTrainer(**dict(self.config.param_trainer), callbacks=[early_stop_callback, checkpoint_callback, lr_logger ])
+            trainer = MyTrainer(**dict(self.config.param_trainer), callbacks=[early_stop_callback, checkpoint_callback, lr_logger ])
 
             # trainer main loop
             mf.pytorch.autolog()
@@ -217,13 +174,20 @@ class Solver:
     def test(self):
         results = {}
         fold_errors_template = {"subject_id":[],
-                                "record_id": [],
-                                "sbp_naive":[],
-                                "sbp_pred":[],
-                                "sbp_label":[],
-                                "dbp_naive":[],
-                                "dbp_pred":[],
-                                "dbp_label":[]}
+                                "record_id": []}
+        for tar in ['sbp', 'dbp']:
+            fold_errors_template[f"{tar}_naive"] = []
+            fold_errors_template[f"{tar}_pred"] = []
+            fold_errors_template[f"{tar}_label"] = []
+            
+        # fold_errors_template = {"subject_id":[],
+        #                         "record_id": [],
+        #                         "sbp_naive":[],
+        #                         "sbp_pred":[],
+        #                         "sbp_label":[],
+        #                         "dbp_naive":[],
+        #                         "dbp_pred":[],
+        #                         "dbp_label":[]}
         fold_errors = {f"{mode}_{k}":[] for k,v in fold_errors_template.items() for mode in ["test"]}
         # =============================================================================
         # data module
@@ -255,20 +219,38 @@ class Solver:
             logger.info(f"\t {metrics}")
 
         results['fold_errors'] = fold_errors    
-
         out_metric = {}
         fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
-        sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
-        dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
-        naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
+        err_dict = {tar: fold_errors[f"test_{tar}_naive"] - fold_errors[f"test_{tar}_label"] \
+                    for tar in ['sbp', 'dbp']}
+        naive_metric = cal_metric(err_dict, mode='nv')
         out_metric.update(naive_metric)
-
-        sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
-        dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
-        test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
-        out_metric.update(test_metric)
+        
+        for mode in ['test']:
+            err_dict = {tar: fold_errors[f"{mode}_{tar}_pred"] - fold_errors[f"{mode}_{tar}_label"] \
+                        for tar in ['sbp', 'dbp']}
+            tmp_metric = cal_metric(err_dict, mode=mode)
+            out_metric.update(tmp_metric)
         
         results['out_metric'] = out_metric 
-        joblib.dump(results, self.config.param_test.save_path)   
+        joblib.dump(results, self.config.param_test.save_path)  
+        
+        
+        
+        
+        # out_metric = {}
+        # fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items()}
+        # sbp_err = fold_errors["test_sbp_naive"] - fold_errors["test_sbp_label"] 
+        # dbp_err = fold_errors["test_dbp_naive"] - fold_errors["test_dbp_label"] 
+        # naive_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='nv')
+        # out_metric.update(naive_metric)
+
+        # sbp_err = fold_errors["test_sbp_pred"] - fold_errors["test_sbp_label"] 
+        # dbp_err = fold_errors["test_dbp_pred"] - fold_errors["test_dbp_label"] 
+        # test_metric = cal_metric({'sbp':sbp_err, 'dbp':dbp_err}, mode='test')
+        # out_metric.update(test_metric)
+        
+        # results['out_metric'] = out_metric 
+        # joblib.dump(results, self.config.param_test.save_path)   
 
         print(out_metric)  
