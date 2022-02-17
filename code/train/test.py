@@ -5,7 +5,7 @@ import argparse
 from time import time, ctime
 from omegaconf import OmegaConf
 from core.solver import Solver as solver_w2w
-from core.solver_w2l import Solver as solver_w2l
+from core.solver_w2l import SolverW2l as solver_w2l
 
 import coloredlogs, logging
 coloredlogs.install()
