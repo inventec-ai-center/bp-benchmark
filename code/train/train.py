@@ -48,7 +48,7 @@ def main(args):
     with mf.start_run(run_name=f"{config.exp.N_fold}fold_CV_Results") as run:
         log_params_mlflow(config)
         cv_metrics = solver.evaluate()
-        print(cv_metrics)
+        logger.info(cv_metrics)
         mf.log_metrics(cv_metrics)
     time_now = time()
     logger.warning(f"Time Used: {ctime(time_now-time_start)}")
