@@ -4,7 +4,7 @@ import joblib
 import numpy as np 
 
 # Load modules
-from core.solver import Solver
+from core.solver_s2s import Solver
 from core.loaders import *
 from core.models import *
 from core.utils import cal_metric
@@ -19,7 +19,7 @@ coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
 #%%
-class SolverML(Solver):
+class SolverF2l(Solver):
     def _get_model(self):
         if self.config.exp.model_type == "lgb":
             model = lgbModel(self.config.param_model, self.config.exp.random_state)
