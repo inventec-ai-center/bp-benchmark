@@ -118,38 +118,26 @@ class SolverML(Solver):
                 model.fit(x,y)
 
                 metrics = {}
-                metrics.update(self.get_cv_metrics(fold_errors, dm, model, mode="tr"))
-                metrics.update(self.get_cv_metrics(fold_errors, dm, model, mode="val"))
-                metrics.update(self.get_cv_metrics(fold_errors, dm, model, mode="ts"))
-                logger.info(f"\t {metrics}")
+                for mode in ['tr', 'val', 'ts']:
+                    metrics.update(self.get_cv_metrics(fold_errors, dm, model, mode=mode))
+                # logger.info(f"\t {metrics}")
                 mf.log_metrics(metrics)
 
             #--- Save to model directory
             os.makedirs(self.config.path.model_directory, exist_ok=True)
             
             
-        # compute final metric
+        #--- compute final metric
         out_metric = {}
         fold_errors = {k:np.concatenate(v, axis=0) for k,v in fold_errors.items() if len(v)!=0 }
-        if target==['SP', 'DP']:
-            sbp_err = fold_errors[f"ts_SP_naive"] - fold_errors[f"ts_SP_label"] 
-            dbp_err = fold_errors[f"ts_DP_naive"] - fold_errors[f"ts_DP_label"] 
-            naive_metric = cal_metric({'SP':sbp_err, 'DP':dbp_err}, mode='nv')
-            out_metric.update(naive_metric)
-            for mode in ['tr', 'val', 'ts']:
-                sbp_err = fold_errors[f"{mode}_SP_pred"] - fold_errors[f"{mode}_SP_label"] 
-                dbp_err = fold_errors[f"{mode}_DP_pred"] - fold_errors[f"{mode}_DP_label"] 
-                tmp_metric = cal_metric({'SP':sbp_err, 'DP':dbp_err}, mode=mode)
-                out_metric.update(tmp_metric)
-        else:  
-            del train_df, test_df, val_df, model
-            bp_err = fold_errors[f"ts_{target}_naive"] - fold_errors[f"ts_{target}_label"] 
-            naive_metric = cal_metric({target:bp_err}, mode='nv')
-            out_metric.update(naive_metric)
-            for mode in ['tr', 'val', 'ts']:
-                bp_err = fold_errors[f"{mode}_{target}_pred"] - fold_errors[f"{mode}_{target}_label"] 
-                tmp_metric = cal_metric({target:bp_err}, mode=mode)
-                out_metric.update(tmp_metric)
-
+        err_dict = {tar:fold_errors[f"ts_{tar}_naive"] - fold_errors[f"ts_{tar}_label"] for tar in target}
+        naive_metric = cal_metric(err_dict, mode='nv')
+        out_metric.update(naive_metric)
+        
+        for mode in ['tr', 'val', 'ts']:
+            err_dict = {tar:fold_errors[f"{mode}_{tar}_pred"] - fold_errors[f"{mode}_{tar}_label"] for tar in target}
+            tmp_metric = cal_metric(err_dict, mode=mode)
+            out_metric.update(tmp_metric)            
+        
         return out_metric
 
