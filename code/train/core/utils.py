@@ -73,7 +73,7 @@ def read_csv(savepath):
 
     cols = [c for c in list(csv_read_data.columns) if not c in ['patient', 'trial', 'SP', 'DP']]
     csv_read_data[cols] = csv_read_data[cols].astype(np.float64)
-    csv_read_data[['SP', 'DP']] = csv_read_data[['SP', 'DP']].astype(np.int64)
+    csv_read_data[['SP', 'DP']] = csv_read_data[['SP', 'DP']].astype(np.float64)
     return csv_read_data
         
 def norm_data(train_df, val_df, test_df, labels_feats=['patient','trial','SP', 'DP']):
