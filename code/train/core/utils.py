@@ -1,9 +1,11 @@
 import os 
+import re
 from pathlib import Path
 import argparse
 import torch
 import torch.nn
 import numpy as np
+import pandas as pd
 import mlflow as mf
 from shutil import rmtree
 from pyampd.ampd import find_peaks
@@ -37,6 +39,23 @@ def get_ckpt(r):
     ckpts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "restored_model_checkpoint")]
     return r.info.artifact_uri, ckpts
 
+def mat2df(data):
+    data.pop('__header__')
+    data.pop('__version__')
+    data.pop('__globals__')
+    # convert to dataframe
+    df = pd.DataFrame()
+    for k, v in data.items():
+        v = list(np.squeeze(v))
+        # deal with trailing whitespace
+        if isinstance(v[0], str):
+            v = [re.sub(r"\s+$","",ele) for ele in v]
+        # convert string nan to float64
+        v = [np.nan if ele=='nan' else ele for ele in v]
+        # df[k] = list(np.squeeze(v))
+        df[k] = v
+    return df
+    
 #%% Global Normalization
 def global_norm(x, signal_type): 
     if signal_type == "SP": (x_min, x_max) = (80, 200)   # mmHg
