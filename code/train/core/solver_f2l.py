@@ -2,12 +2,13 @@
 import os
 import joblib
 import numpy as np 
+import pandas as pd
 
 # Load modules
 from core.solver_s2s import Solver
 from core.loaders import *
 from core.models import *
-from core.utils import cal_metric
+from core.utils import (cal_metric, get_nested_fold_idx, norm_data, read_csv)
 
 # Others
 import mlflow as mf
@@ -96,13 +97,19 @@ class SolverF2l(Solver):
         #--- data module
         dm = self._get_loader()
 
-        all_split_df = joblib.load(self.config.exp.subject_dict)
+        all_split_df0 = joblib.load('/sensorsbp/sergio_pl/data/paper/splits/ppgbp_bw_bsr_2s_split_norm.pkl')
+        all_split_df = [read_csv(f"{self.config.exp.subject_dict}_{i}.csv") for i in range(self.config.exp.N_fold)]
         #--- Nested cv 
-        for foldIdx in range(self.config.exp.N_fold):
+        for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
             if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
-            train_df = all_split_df[foldIdx]['train']
-            val_df = all_split_df[foldIdx]['val']
-            test_df = all_split_df[foldIdx]['test']
+            train_df = pd.concat(np.array(all_split_df)[folds_train])
+            val_df = pd.concat(np.array(all_split_df)[folds_val])
+            test_df = pd.concat(np.array(all_split_df)[folds_test])
+            
+            train_df, val_df, test_df = norm_data(train_df, val_df, test_df)
+            print((all_split_df0[foldIdx]['train']==train_df).all())
+            print((all_split_df0[foldIdx]['val']==val_df).all())
+            print((all_split_df0[foldIdx]['test']==test_df).all())
             
             dm.setup_kfold(train_df, val_df, test_df)
             
