@@ -1,0 +1,54 @@
+
+# Paths
+path:
+    data: "../../datasets/segmented/UCI.pkl" # Path to file with the segmented data 
+    log: "core/logs/UCI_log.txt" # Logging files to save a summary of the process 
+    save_name: "../../datasets/preprocessed/UCI.pkl" # File name to save the signal data
+    save_name_feats: "../../datasets/preprocessed/UCI_feats.pkl" # File name to save the features data
+    feats_template: "core/config/preprocessing/columns_template.csv" # Columns template for the 
+
+# frequency sampling rate of the signals
+fs: 125
+
+# Filter by abnormal ABP/BP values. Set the valid ranges of BP
+bp_filter:
+    up_sbp: 220 # Max value for SBP
+    lo_sbp: 80 # Min value for SBP
+    up_dbp: 120 # Max value for DBP
+    lo_dbp: 50 # Min value for DBP
+    up_diff: 120 # Max value for SBP-DBP
+    lo_diff: 20 # Min value for SBP-DBP
+
+# Number of standard deviations to identify peak or valley as outlier
+th_out: 2.6
+
+# Limitation of cycle length (p2p & v2v distance threshold in seconds)
+cycle_len:
+    lo_p2p: 0.5 # shortest cycle
+    up_p2p: 1.5 # longest cycle
+
+# Threshold to identify distorted waveforms
+distorted_th:
+    th_p2p_std: 20 # Peak-to-peak / valley-to-valley distance standard deviation threshold.
+    th_amp_abp_std: 8 # ABP peak/valley amplitude threshold
+    th_amp_ppg_std: 0.3 # PPG peak/valley amplitude threshold
+
+# Parameters for butterworth band-pass filter (ONLY FOR features extraction).
+ppg_filter:
+    enable: True # enable the filtering
+    lowcut: .5 
+    highcut: 8
+    order:  1
+
+# Enable to remove the first and last peaks/valleys in cycle identification 
+remove_start_end: True 
+
+# SQI skewness removal
+lo_sqi: 0 # filter bellow this number 
+
+# Parameters for parallelization
+parallel:
+    n_jobs: -1
+    verbose: 0
+
+

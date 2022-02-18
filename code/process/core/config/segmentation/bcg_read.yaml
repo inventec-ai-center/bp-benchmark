@@ -1,0 +1,25 @@
+
+# Path to folder of BCG raw data
+# The expected files are the following: 
+# "bcg_pat_info.csv" file with the demographic information of the subjects.
+# "pats" directory with one CSV file named "pat<id_subject>pred.csv" per patient with vital signals.
+# These files have to be generated using MatLab from the original data (run BCG-mat2csv.mat file).
+data: "../../datasets/raw/BCG/"
+
+# File name to save the data
+save_name: "../../datasets/segmented/BCG.pkl"
+
+# Window size to segment the signal. 
+# Set either win_sec in seconds or win_sam in samples 
+win_sec: 5 #Window size in seconds
+win_sam: null #Window size in samples
+
+#Waiting window for next segment in seconds
+win_wait: 0 
+
+#Original frequency sampling rate
+fs: 1000
+
+#Resampling frequency rate (-1 to keep the original fs)
+resampling: 125
+
