@@ -97,7 +97,6 @@ class SolverF2l(Solver):
         #--- data module
         dm = self._get_loader()
 
-        all_split_df0 = joblib.load('/sensorsbp/sergio_pl/data/paper/splits/ppgbp_bw_bsr_2s_split_norm.pkl')
         all_split_df = [read_csv(f"{self.config.exp.subject_dict}_{i}.csv") for i in range(self.config.exp.N_fold)]
         #--- Nested cv 
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
@@ -107,9 +106,6 @@ class SolverF2l(Solver):
             test_df = pd.concat(np.array(all_split_df)[folds_test])
             
             train_df, val_df, test_df = norm_data(train_df, val_df, test_df)
-            print((all_split_df0[foldIdx]['train']==train_df).all())
-            print((all_split_df0[foldIdx]['val']==val_df).all())
-            print((all_split_df0[foldIdx]['test']==test_df).all())
             
             dm.setup_kfold(train_df, val_df, test_df)
             
