@@ -55,6 +55,59 @@ def mat2df(data):
         # df[k] = list(np.squeeze(v))
         df[k] = v
     return df
+
+def read_csv(savepath):
+    import csv
+    csv_read_data = []
+    with open(savepath, newline='') as csvfile:
+        rows = csv.reader(csvfile)
+        for rrr in rows:
+            csv_read_data.append(rrr)
+            
+    csv_read_data = pd.DataFrame(csv_read_data)
+    new_header = csv_read_data.iloc[0]
+    csv_read_data = csv_read_data[1:]
+    csv_read_data.columns = new_header
+    csv_read_data = csv_read_data.reset_index(drop=True)
+    csv_read_data[csv_read_data==''] = np.nan
+
+    cols = [c for c in list(csv_read_data.columns) if not c in ['patient', 'trial', 'SP', 'DP']]
+    csv_read_data[cols] = csv_read_data[cols].astype(np.float64)
+    csv_read_data[['SP', 'DP']] = csv_read_data[['SP', 'DP']].astype(np.int64)
+    return csv_read_data
+        
+def norm_data(train_df, val_df, test_df, labels_feats=['patient','trial','SP', 'DP']):
+    from sklearn.preprocessing import MinMaxScaler
+
+    df_train = train_df.copy()
+    df_val = val_df.copy()
+    df_test = test_df.copy()
+
+    df_train_norm=df_train[labels_feats].reset_index(drop=True)
+    df_train_norm['SP'] = global_norm(df_train['SP'].values, 'SP')
+    df_train_norm['DP'] = global_norm(df_train['DP'].values, 'DP')
+    df_train_feats = df_train.drop(columns=labels_feats)
+    feats = df_train_feats.columns
+
+    scaler = MinMaxScaler()
+    X_train = scaler.fit_transform(df_train_feats.values)
+    df_train_norm = pd.concat([df_train_norm,pd.DataFrame(X_train,columns=feats)],axis=1)
+
+    df_val_norm=df_val[labels_feats].reset_index(drop=True)
+    df_val_norm['SP'] = global_norm(df_val['SP'].values, 'SP')
+    df_val_norm['DP'] = global_norm(df_val['DP'].values, 'DP')
+    df_val_feats = df_val.drop(columns=labels_feats)
+    X_val = scaler.transform(df_val_feats.values)
+    df_val_norm = pd.concat([df_val_norm,pd.DataFrame(X_val,columns=feats)],axis=1)
+
+    df_test_norm=df_test[labels_feats].reset_index(drop=True)
+    df_test_norm['SP'] = global_norm(df_test['SP'].values, 'SP')
+    df_test_norm['DP'] = global_norm(df_test['DP'].values, 'DP')
+    df_test_feats = df_test.drop(columns=labels_feats)
+    X_test = scaler.transform(df_test_feats.values)
+    df_test_norm = pd.concat([df_test_norm,pd.DataFrame(X_test,columns=feats)],axis=1)
+
+    return df_train_norm, df_val_norm, df_test_norm
     
 #%% Global Normalization
 def global_norm(x, signal_type): 
