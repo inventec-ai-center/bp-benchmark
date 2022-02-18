@@ -1,4 +1,6 @@
 #%%
+import random
+import torch
 import numpy as np
 from core.utils import (print_criterion, get_bp_pk_vly_mask,
                         glob_dez, glob_z, glob_demm, glob_mm, 
@@ -6,6 +8,14 @@ from core.utils import (print_criterion, get_bp_pk_vly_mask,
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
+
+SEED = 0
+def seed_worker(SEED):
+    np.random.seed(SEED)
+    random.seed(SEED)
+
+g = torch.Generator()
+g.manual_seed(SEED)
 
 class WavDataModule(pl.LightningDataModule):
     def __init__(self, config):
@@ -31,8 +41,9 @@ class WavDataModule(pl.LightningDataModule):
         # if mode == "test": batch_size=512
         # else: batch_size = self.config.param_model.batch_size
         batch_size = self.config.param_model.batch_size
-        return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=(mode=="train"))
-
+        return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=(mode=="train"), 
+                          worker_init_fn=seed_worker)
+        
     def train_dataloader(self, is_print=False):
         return self._get_loader(self.folds_train, "train", is_print=is_print)
 

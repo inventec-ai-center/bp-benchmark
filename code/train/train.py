@@ -1,5 +1,8 @@
 import os
 import argparse
+import random
+import numpy as np
+import torch
 
 # Load modules
 from core.solver_s2s import Solver as solver_s2s
@@ -17,7 +20,12 @@ import coloredlogs, logging
 coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
-
+SEED = 0
+np.random.seed(SEED)
+random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed(SEED) 
+torch.cuda.manual_seed_all(SEED)
 
 def get_parser():
     parser = argparse.ArgumentParser()
