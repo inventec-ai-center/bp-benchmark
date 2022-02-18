@@ -168,7 +168,10 @@ def _compute_features_df(df, args):
 
 
 def main(args):
+
+	os.makedirs(os.path.dirname(args.path.log), exist_ok=True)
 	cl_log = open(args.path.log, "w") ## Read logging file
+	
 	df = pd.read_pickle(args.path.data) ## Read dataset
 	original_columns = df.columns ## Save original columns
 
