@@ -4,11 +4,12 @@ import joblib
 from shutil import rmtree
 import pandas as pd
 import numpy as np 
+from scipy.io import loadmat
 
 # Load loaders
 from core.loaders import *
 from core.solver_s2s import Solver
-from core.utils import (get_nested_fold_idx, get_ckpt, cal_metric, cal_statistics)
+from core.utils import (get_nested_fold_idx, get_ckpt, cal_metric, cal_statistics, mat2df)
 
 # Load model
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -92,7 +93,7 @@ class SolverS2l(Solver):
         dm = self._get_loader()
 
         #--- Nested cv 
-        all_split_df = joblib.load(self.config.exp.subject_dict)
+        all_split_df = [mat2df(loadmat(f"{self.config.exp.subject_dict}_{i}.mat")) for i in range(self.config.exp.N_fold)]
         self.config = cal_statistics(self.config, all_split_df)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
             if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
