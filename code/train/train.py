@@ -1,8 +1,10 @@
 import os
+os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
 import argparse
 import random
 import numpy as np
 import torch
+import pytorch_lightning as pl
 
 # Load modules
 from core.solver_s2s import Solver as solver_s2s
@@ -21,11 +23,10 @@ coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
 SEED = 0
-np.random.seed(SEED)
-random.seed(SEED)
-torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED) 
 torch.cuda.manual_seed_all(SEED)
+pl.utilities.seed.seed_everything(seed=SEED)
+
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -46,6 +47,7 @@ def main(args):
     if config.exp.model_type=='unet1d':
         solver = solver_s2s(config)
     elif config.exp.model_type=='resnet1d':
+        torch.use_deterministic_algorithms(True)
         solver = solver_s2l(config)
     else:
         solver = solver_f2l(config)
