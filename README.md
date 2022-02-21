@@ -45,6 +45,31 @@ The processed datasets are saved in the directories indicated in the config file
 - `./preprocessed`: keeps the cleaned datasets (signals and features).
 - `./splitted`: stores the splitted data ready for training and validation.
 
+#### Modules
+
+Besides, the code has been modularized to be able to perform each of the data preparation steps independently. There are different three modules:
+- Segmenting module: reads, aligns and segments the raw data according to the config file passed as `--config_file` parameter.
+    - There are one script for each dataset with the name `read_<data-name>.py`.
+    - All config files of segmenting module are in `./core/config/segmentation`
+```  bash
+# In /bp-benchmark/code/process directory
+python read_sensors.py --config_file core/config/segmentation/sensors_read.yaml
+```
+- Preprocessing module: cleans the segmented signals and extracts the PPG's features.
+    - `cleaning.py` is the main script of the module. For PPG-BP dataset, please use `cleaningPPGBP.py`.
+    - Its config files are located in `./core/config/preprocessing`.
+```  bash
+# In /bp-benchmark/code/process directory
+python cleaning.py --config_file core/config/preprocessing/sensors_clean.yaml
+```
+- Splitting module: splits the data according to the validation strategy chosen in the config file of `--config_file` parameter.
+     - `data_splitting.py` is the main script of the module.
+    - All config files are in `./core/config/splitting`. 
+```  bash
+# In /bp-benchmark/code/process directory
+python data_splitting.py --config_file core/config/preprocessing/sensors_clean.yaml
+```
+
 
 ## Training
 
