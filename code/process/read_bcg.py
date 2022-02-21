@@ -24,7 +24,7 @@ def main(args):
 
     fppg = []
     freBAP = []
-    for i in range(1,41):
+    for i in tqdm(range(1,41)):
         pat_pred_df = pd.read_csv(path_data_BCG+'pats/pat'+str(i)+'pred.csv')
         fppg.append(pat_pred_df['PPG'].values)
         freBAP.append(pat_pred_df['reBAP'].values)

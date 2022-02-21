@@ -30,7 +30,7 @@ def main(args):
 
     path_subjects = path_data_PPGBP+'0_subject/'
     df = {'patient':[],'trial':[],'signal':[]}
-    for f in listdir(path_subjects):
+    for f in tqdm(listdir(path_subjects)):
         if isfile(join(path_subjects, f)):
             file = f
             pat_id = file.split('_')[0]
