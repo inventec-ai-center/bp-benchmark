@@ -93,7 +93,7 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_file", type=str, help="Path for the config file") 
+    parser.add_argument("--config_file", type=str, help="Path for the config file", required=True)
     args_m = parser.parse_args()
     
     if os.path.exists(args_m.config_file) == False:         
