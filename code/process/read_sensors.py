@@ -14,7 +14,7 @@ from core.lib.preprocessing import align_pair
 def main(args):
     print('Reading data...')
     df = pd.read_csv(args.rec2subid)
-    path = config.data
+    path = args.data
     data_list = []
     for file in tqdm(os.listdir(path)):
         if file in df.file_name.values:
