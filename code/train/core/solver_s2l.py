@@ -92,8 +92,13 @@ class SolverS2l(Solver):
         #--- Data module
         dm = self._get_loader()
 
+        #--- Load data
+        if self.config.exp.subject_dict.endswith('.pkl'):
+            all_split_df = joblib.load(self.config.exp.subject_dict)
+        elif self.config.exp.subject_dict.endswith('fold'):
+            all_split_df = [mat2df(loadmat(f"{self.config.exp.subject_dict}_{i}.mat")) for i in range(self.config.exp.N_fold)]
+        
         #--- Nested cv 
-        all_split_df = [mat2df(loadmat(f"{self.config.exp.subject_dict}_{i}.mat")) for i in range(self.config.exp.N_fold)]
         self.config = cal_statistics(self.config, all_split_df)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
             if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
