@@ -23,5 +23,6 @@ docker build -t bpimage .
 docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-algorithm/:/sensorsbp -v ~/bp_benchmark/datasets/:/sensorsbp/datasets bpimage bash
 
 #-- Quick test the environment
+cd code/train
 python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 ```
