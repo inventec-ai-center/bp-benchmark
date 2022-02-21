@@ -5,7 +5,6 @@ from core.solver_s2l import Solver as solver_s2l
 from time import time, ctime
 
 import coloredlogs, logging
-import argparse
 coloredlogs.install()
 logger = logging.getLogger(__name__)  
 
@@ -19,19 +18,8 @@ import mlflow as mf
 from mlflow.tracking.client import MlflowClient
 
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    # general config
-    parser.add_argument("--config_file", type=str, help="Path for the config file") 
-
-    return parser
-
 #%%
-parser = get_parser()
-args = parser.parse_args()
-FILEROOT = '/'.join(args.config_file.split('/')[:-1])
-FILENAME = args.config_file.split('/')[-1].split('.')[0]
-@hydra.main(config_path=FILEROOT, config_name=FILENAME)
+@hydra.main(config_path='./core/config/tune/dl', config_name="resnet_bcg_tune")
 def main(config):
     # =============================================================================
     # check config have been run
