@@ -98,7 +98,7 @@ class sensorsLoader():
 
         # select feature by importance
         if self.config.exp.model_type=='mlp':
-            ft_imp_SP = pd.read_pickle(self.config.exp.feat_importance) 
+            ft_imp_SP = pd.read_pickle(self.config.exp.feat_importance.replace('-DP', '-SP')) 
             ft_imp_DP = pd.read_pickle(self.config.exp.feat_importance.replace('-SP', '-DP'))
             ft_total= ft_imp_SP.merge(ft_imp_DP,on='features')
             ft_total['importance'] = (ft_total['importance_x']+ft_total['importance_y'])/2
