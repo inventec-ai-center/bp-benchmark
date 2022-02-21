@@ -20,7 +20,7 @@ from mlflow.tracking.client import MlflowClient
 
 
 #%%
-@hydra.main(config_path='./core/config/hydra', config_name="resnet_bcg_5s")
+@hydra.main(config_path='./core/config/tune', config_name="resnet_bcg_5s")
 def main(config):
     # =============================================================================
     # check config have been run
