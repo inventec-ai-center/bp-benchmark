@@ -7,7 +7,7 @@ mkdir bp_benchmark
 cd bp_benchmark
 
 #-- Clone project
-git clone https://gitlab.com/inventecaicenter/bp-algorithm.git
+git clone git@gitlab.com:inventecaicenter/bp-algorithm.git
 cd bp-algorithm
 # Go to the branch
 git checkout exp/sensors
