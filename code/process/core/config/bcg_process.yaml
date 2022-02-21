@@ -1,0 +1,13 @@
+
+# Name of the dataset to be processed (BCG, PPGBP, sensors or UCI)
+data_name: 'BCG'
+
+# Paths to the config files for the different stages of data preparation: 
+# - Read, alignment and segmentation of raw data
+# - Cleaning and feature generation
+# - Data splitting for validation
+config_files:
+    segmenting: './core/config/segmentation/bcg_read.yaml'
+    cleaning: './core/config/preprocessing/bcg_clean.yaml'
+    splitting: './core/config/splitting/bcg_split.yaml' # signal based data
+    splitting_feats: './core/config/splitting/bcg_feats_split.yaml' # features based data

@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 import joblib
 
-np.random.seed(0)
-random.seed(0)
-
+from omegaconf import OmegaConf 
+import argparse
+import os
 
 def label2class(sbp, dbp):
     ret = np.zeros(2)
@@ -47,7 +47,7 @@ def data_splitting(config):
     # ------------------------------------------------------------------------------------------
     # cross-validation
     if config.param_split.type=='cv': 
-        data = pd.read_pickle(config.path.processed_df_path) #sensors_data2.pkl
+        data = pd.read_pickle(config.path.processed_df_path)
 
         if config.param_split.is_mix:
             data["label_class"] = data.apply(lambda row: label2class(row["SP"], row["DP"]), axis=1)
@@ -89,10 +89,10 @@ def data_splitting(config):
         df["part"] = df.apply(lambda row: '_'.join(row.patient.split('_')[:2]), axis=1)
         # df.columns = ['subject_id', 'trial', 'sbp', 'dbp', 'sfppg', 'abp',  'part']
         if config.param_split.is_mix:
-            ts_df = df.sample(frac=0.2, random_state=100)
+            ts_df = df.sample(frac=config.param_split.frac, random_state=config.param_split.random_state)
             exclude = df.index.isin(ts_df.index.to_list())
             df = df[~exclude]
-            val_df = df.sample(frac=0.2, random_state=100)
+            val_df = df.sample(frac=config.param_split.frac, random_state=config.param_split.random_state)
             exclude = df.index.isin(val_df.index.to_list())
             tr_df = df[~exclude]
         else:
@@ -115,17 +115,17 @@ def data_splitting(config):
                 ts_df = df[df.part.isin(config.param_split.ts_part)]
 
         all_split_df = [ts_df, val_df, tr_df]
+
+    for i in range(len(all_split_df)): ### remove 'label_class' column
+        if 'label_class' in all_split_df[i].columns:
+            all_split_df[i].drop(columns=['label_class'], inplace=True)
+
     joblib.dump(all_split_df, config.path.split_df_path)
-#%%
-if __name__=='__main__':
-    from omegaconf import OmegaConf 
-    import argparse
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config_file", type=str, help="Path for the config file") 
-    
-    # split the data with given config
-    config = OmegaConf.load(parser.parse_args().config_file)
+
+def main(config):
+    np.random.seed(config.param_split.random_state)
+    random.seed(config.param_split.random_state)
+
     data_splitting(config)
 
     # load result and get naive
@@ -154,14 +154,30 @@ if __name__=='__main__':
     all_dp_ME = np.hstack(all_dp_ME)
     sp_mae = np.mean(all_sp_MAE)
     dp_mae = np.mean(all_dp_MAE)
-    print("SBP: MAE {:.2f} | ME {:.2f} | STD {:.2f}".format(sp_mae, all_sp_ME.mean(), all_sp_ME.std()))
-    print("DBP: MAE {:.2f} | ME {:.2f} | STD {:.2f}".format(dp_mae, all_dp_ME.mean(), all_dp_ME.std()))
-    print("SBP: MAE {} | ME {} | STD {}".format(sp_mae, all_sp_ME.mean(), all_sp_ME.std()))
-    print("DBP: MAE {} | ME {} | STD {}".format(dp_mae, all_dp_ME.mean(), all_dp_ME.std()))
+    print("SBP: MAE {:.4f} | ME {:.4f} | STD {:.4f}".format(sp_mae, all_sp_ME.mean(), all_sp_ME.std()))
+    print("DBP: MAE {:.4f} | ME {:.4f} | STD {:.4f}".format(dp_mae, all_dp_ME.mean(), all_dp_ME.std()))
     cnt = 0
     for d in all_split_df:
         cnt+=d.shape[0]
     print('total amount', cnt)
+
+#%%
+if __name__=='__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_file", type=str, help="Path for the splitting config file", required=True) 
+    args_m = parser.parse_args()
+
+    ## Read config file
+    if os.path.exists(args_m.config_file) == False:         
+        raise RuntimeError("config_file {} does not exist".format(args_m.config_file))
+
+    # split the data with given config
+    config = OmegaConf.load(args_m.config_file)
+
+    main(config)
+
+    
 
     
     
