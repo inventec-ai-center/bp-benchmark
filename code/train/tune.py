@@ -1,7 +1,7 @@
 #%%
 from core.utils import log_params_mlflow, log_hydra_mlflow
-from core.solver import Solver as solver_w2w
-from core.solver_w2l import Solver as solver_w2l
+from core.solver_s2s import Solver as solver_s2s
+from core.solver_s2l import Solver as solver_s2l
 from time import time, ctime
 
 import coloredlogs, logging
@@ -74,9 +74,9 @@ def main(config):
     # Setup Solver
     # =============================================================================
     if config.exp.model_type=='unet1d':
-        solver = solver_w2w(config)
+        solver = solver_s2s(config)
     elif config.exp.model_type=='resnet1d':
-        solver = solver_w2l(config)
+        solver = solver_s2l(config)
 
 #%%
     # =============================================================================
