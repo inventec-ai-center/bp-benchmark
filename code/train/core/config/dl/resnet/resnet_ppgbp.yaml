@@ -1,12 +1,11 @@
 path:
-  model_directory: ./model-${exp.model_type}
+  model_directory: ./model-{${exp.model_type}}
   mlflow_dir: ./mlruns
 exp:
   fs: 125
   N_fold: 5
   random_state: 100
-  model_type: resnet1d
-  data_name: bcg
+  data_name: ppgbp
   exp_name: ${exp.data_name}-${exp.model_type}
   subject_dict: /sensorsbp/datasets/splits/${exp.data_name}_dataset/signal_fold
   loader: waveform
@@ -21,11 +20,14 @@ param_loader:
 objective:
   type: val_mse
   mode: min
+# param for test
+param_test:
+  save_path: /sensorsbp/prediction/ppgbp_dataset/rsnt_ppgbp_nobw.pkl
 param_trainer:
   max_epochs: 100
   check_val_every_n_epoch: 2
   progress_bar_refresh_rate: 5
-  gpus: '1'
+  gpus: '0'
   auto_lr_find: true
   auto_scale_batch_size: binsearch
 param_early_stop:
@@ -36,14 +38,14 @@ param_early_stop:
   mode: ${objective.mode}
 param_model:
   N_epoch: 256
-  batch_size: 256
+  batch_size: 32
   in_channel: 1
   base_filters: 32
   first_kernel_size: 9
-  kernel_size: 3
+  kernel_size: 5
   stride: 4
   groups: 2
-  n_block: 10
+  n_block: 4
   output_size: 2
   lr: 0.001
   sample_step: 1
