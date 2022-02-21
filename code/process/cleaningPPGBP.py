@@ -245,7 +245,7 @@ if __name__=="__main__":
 
 	#---------- Read config file ----------#
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--config_file", type=str, help="Path for the config file") 
+	parser.add_argument("--config_file", type=str, help="Path for the config file", required=True)
 	args_m = parser.parse_args()
 
 	## Read config file
