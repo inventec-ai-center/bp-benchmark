@@ -1,7 +1,7 @@
 #%%
 from core.utils import log_params_mlflow, log_hydra_mlflow
 from core.solver_s2s import Solver as solver_s2s
-from core.solver_s2l import Solver as solver_s2l
+from core.solver_s2l import SolverS2l as solver_s2l
 from time import time, ctime
 
 import coloredlogs, logging
