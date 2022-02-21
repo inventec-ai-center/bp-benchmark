@@ -1,6 +1,6 @@
 
 # Name of the dataset to be processed (BCG, PPGBP, sensors or UCI)
-data_name: 'PPGBP'
+data_name: 'UCI'
 
 # Paths to the config files for the different stages of data preparation: 
 # - Read, alignment and segmentation of raw data
