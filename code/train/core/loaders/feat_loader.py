@@ -104,7 +104,7 @@ class sensorsLoader():
             ft_total['importance'] = (ft_total['importance_x']+ft_total['importance_y'])/2
             df_imp = ft_total[['features','importance']].sort_values('importance',ascending=False)
         else:    
-            file_path = self.config.exp.feat_importance if target=='SP' else self.config.exp.feat_importance.replace('-SP', '-DP')
+            file_path = self.config.exp.feat_importance 
             df_imp = pd.read_pickle(file_path)
         sorted_feat = df_imp.features.values
         len_features = len(sorted_feat)
