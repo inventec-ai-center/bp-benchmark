@@ -27,6 +27,25 @@ cd code/train
 python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 ```
 
+## Processing
+
+This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction an data splitting for model validation.
+
+The `process.py` script is in charge of performing the complete preparation of the datasets. To prepare a specific dataset, run the script with its correspoding configuration file at `--config_file` parameter. All config files can be found in `/bp-benchmark/code/process/core/config`. The following example shows the command for  the preparation of sensors dataset: 
+
+```  bash
+# Go to /bp-benchmark/code/process
+cd /bp-benchmark/code/process
+python process.py --config_file core/config/sensors_process.yaml
+```
+
+The processed datasets are saved in the directories indicated in the config files of each processing steps at `/bp-benchmark/code/process/core/config`. By default, the datasets are saved under the directory `/bp-benchmark/datasets` in the following structure:
+- `./raw`: gathers the directories with the original data of each dataset (BCG, PPGBP, sensors & UCI).
+- `./segmented`: stores the segmented datasets.
+- `./preprocessed`: keeps the cleaned datasets (signals and features).
+- `./splitted`: stores the splitted data ready for training and validation.
+
+
 ## Training
 
 - Training Feat2Lab models: 
