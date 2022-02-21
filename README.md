@@ -45,7 +45,7 @@ The processed datasets are saved in the directories indicated in the config file
 - `./preprocessed`: keeps the cleaned datasets (signals and features).
 - `./splitted`: stores the splitted data ready for training and validation.
 
-#### Modules
+#### Processing's Modules
 
 Besides, the code has been modularized to be able to perform each of the data preparation steps independently. There are different three modules:
 - Segmenting module: reads, aligns and segments the raw data according to the config file passed as `--config_file` parameter.
