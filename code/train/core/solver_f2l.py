@@ -106,17 +106,13 @@ class SolverF2l(Solver):
         #--- Nested cv 
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
             if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
-            if self.config.exp.subject_dict.endswith('.pkl'):
-                train_df = all_split_df[foldIdx]['train']
-                val_df = all_split_df[foldIdx]['val']
-                test_df = all_split_df[foldIdx]['test']
-            elif self.config.exp.subject_dict.endswith('fold'):
-                train_df = pd.concat(np.array(all_split_df)[folds_train])
-                val_df = pd.concat(np.array(all_split_df)[folds_val])
-                test_df = pd.concat(np.array(all_split_df)[folds_test])
-            
+            train_df = pd.concat(np.array(all_split_df)[folds_train])
+            val_df = pd.concat(np.array(all_split_df)[folds_val])
+            test_df = pd.concat(np.array(all_split_df)[folds_test])
+        
+            if self.config.exp.subject_dict.endswith('fold'):
                 train_df, val_df, test_df = norm_data(train_df, val_df, test_df)
-            
+                
             dm.setup_kfold(train_df, val_df, test_df)
             
             #--- Init model
