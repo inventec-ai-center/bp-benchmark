@@ -29,10 +29,12 @@ python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 
 ## Processing
 
-This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction an data splitting for model validation.
+This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction and data splitting for model validation.
 
-The `process.py` script is in charge of performing the complete preparation of the datasets. To prepare a specific dataset, run the script with its correspoding configuration file at `--config_file` parameter. All config files can be found in `/bp-benchmark/code/process/core/config`. The following example shows the command for  the preparation of sensors dataset: 
-
+<!-- The `process.py` script is in charge of performing the complete preparation of the datasets. To prepare a specific dataset, run the script with its correspoding configuration file at `--config_file` parameter. All config files can be found in `/bp-benchmark/code/process/core/config`. The following example shows the command for  the preparation of sensors dataset:  -->
+`process.py --config_file [CONFIG PATH]`
+* It performs the complete preparation of the datasets. (segmenting -> cleaning -> splitting)
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp-benchmark/code/process/core/config`
 ```  bash
 # Go to /bp-benchmark/code/process
 cd /bp-benchmark/code/process
@@ -72,10 +74,12 @@ python data_splitting.py --config_file core/config/preprocessing/sensors_clean.y
 
 
 ## Training
+`train.py --config_file [CONFIG PATH]`
+* It trains the model with the parameters set in the input config file.
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp-benchmark/code/train/core/config`
+#### Training Feat2Lab models: 
 
-- Training Feat2Lab models: 
-	- Input the desired config file with --config_file argument
-	- All the config files of Feat2Lab approach are in `./core/config/ml/` 
+- All the config files of Feat2Lab approach are in `./core/config/ml/` 
 
 ```
 # Go to /sensorsbp/code/train
@@ -83,8 +87,9 @@ cd /sensorsbp/code/train
 python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 ```
 
-- Training Sig2Lab models
-	- All the config files of Feat2Lab approach are in `./core/config/dl/resnet/` 
+#### Training Sig2Lab models
+
+- All the config files of Feat2Lab approach are in `./core/config/dl/resnet/` 
 
 ```
 # Go to /sensorsbp/code/train
@@ -92,8 +97,9 @@ cd /sensorsbp/code/train
 python train.py --config_file core/config/dl/resnet/resnet_bcg.yaml
 ```
 
-- Training Sig2Sig models
-	- All the config files of Feat2Lab approach are in `./core/config/dl/unet/` 
+#### Training Sig2Sig models
+
+- All the config files of Feat2Lab approach are in `./core/config/dl/unet/` 
 
 ```
 # Go to /sensorsbp/code/train
@@ -101,9 +107,30 @@ cd /sensorsbp/code/train
 python train.py --config_file core/config/dl/resnet/unet_bcg.yaml
 ```
 
+The models are save in the path indicated in the config_file (`${path.model_directory}`), by default it will be in `/sensorsbp/code/train/model-${exp.model_type}`.
+
 ## Tuning hyper-parameters with Hydra Optuna
-- Tuning Sig2Lab or Sig2Sig models
-	- Edit the config file's path in `tune.py`
+`tune.py -m`
+- The input of tune.py is the config_file which is assigned in this script. People can edit the config path in the script.
+- The parameter search space is defined in the config_file with Hydra optuna tool.
+- `-m` is the flag to do tune the parameters for multi run, without giving `-m`, it won't tune the parameters in search space, but only run with the paramters set in config_file (`${param_model}`) once.
+
+#### Tuning Feat2Lab models
+- Edit the config file's path in `tune_ml.py`
+```
+#============== In tune.py ==============#
+# Edit the config file's path in following line:
+@hydra.main(config_path='./core/config/tune/ml', config_name="lgb_sensors_SP")
+
+#======= In command line interface ======#
+# Go to /sensorsbp/code/train
+cd /sensorsbp/code/train
+python tune_ml.py -m
+```
+
+#### Tuning Sig2Lab or Sig2Sig models
+
+- Edit the config file's path in `tune.py`
 ```
 #============== In tune.py ==============#
 # Edit the config file's path in following line:
@@ -113,4 +140,26 @@ python train.py --config_file core/config/dl/resnet/unet_bcg.yaml
 # Go to /sensorsbp/code/train
 cd /sensorsbp/code/train
 python tune.py -m
+```
+
+## Checking results in MLflow
+``` bash
+# Setup mlflow server in background
+# Step 1: install tmux (or screen) to run multiple sessions
+apt-get update
+apt-get install tmux
+
+# Step 2: open a new session for mlflow
+tmux new -s mlflow
+
+# Step 3: in the new session setup mlflow server
+cd /sensorsbp/code/train
+mlflow ui -h 0.0.0.0 -p 9181 --backend-store-uri ./mlruns/
+# leave the session with ^B+D
+ 
+# Step 4: forward the port 9181
+ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to working_server] -i [ssh key to working_server]
+
+# Step 5: now you can browse mlflow server in your browser
+# open a new tab in your browser and type http://localhost:9181/
 ```
