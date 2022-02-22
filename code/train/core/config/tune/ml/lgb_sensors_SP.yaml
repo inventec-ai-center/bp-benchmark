@@ -63,9 +63,9 @@ exp:
     random_state: 123456
     model_type: "lgb" #"attnunet1d"
     data_name: sensors
-    exp_name: ${exp.data_name}-${exp.model_type}-${param_loader.label}-tune
-    subject_dict: '/sensorsbp/sergio_pl/data/paper/splits/${exp.data_name}_bw_bsr_5s_split_norm.pkl' # mix_split_df.pkl
-    feat_importance: '/sensorsbp/sergio_pl/data/paper/${exp.data_name}-featImportance-SP.pkl' 
+    exp_name: ${exp.data_name}-${exp.model_type}
+    subject_dict: ./datasets/splits/${exp.data_name}_dataset/feat_fold
+    feat_importance: ./datasets/splits/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
     loader: "feature"
     cv: cv
 
