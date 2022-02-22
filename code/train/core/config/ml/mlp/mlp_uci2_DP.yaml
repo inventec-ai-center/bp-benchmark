@@ -8,8 +8,8 @@ exp:
   model_type: mlp
   data_name: uci2
   exp_name: ${exp.data_name}-${exp.model_type}
-  subject_dict: ./datasets/splitted/${exp.data_name}_dataset/feat_fold
-  feat_importance: ./datasets/splitted/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
+  feat_importance: ../../datasets/splitted/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
   loader: feature
   cv: HOO
 param_loader:
