@@ -18,7 +18,7 @@ from mlflow.tracking.client import MlflowClient
 
 
 #%%
-@hydra.main(config_path='./core/config/hydra/ml', config_name="lgb_sensors_SP")
+@hydra.main(config_path='./core/config/tune/ml', config_name="lgb_sensors_SP")
 def main(config):
     target = config.param_loader.label
     # =============================================================================
