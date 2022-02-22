@@ -1,9 +1,9 @@
 FROM pytorch/pytorch:1.8.0-cuda11.1-cudnn8-runtime
 
 
-RUN mkdir /sensorsbp
-COPY ./ /sensorsbp
-WORKDIR /sensorsbp
+RUN mkdir /bp_benchmark
+COPY ./ /bp_benchmark
+WORKDIR /bp_benchmark
 
 RUN apt-get update -y && apt-get install git -y
 
