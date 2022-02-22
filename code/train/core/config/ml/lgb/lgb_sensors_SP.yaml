@@ -8,8 +8,8 @@ exp:
   model_type: lgb
   data_name: sensors
   exp_name: ${exp.data_name}-${exp.model_type}-${param_loader.label}
-  subject_dict: /sensorsbp/datasets/splits/${exp.data_name}_dataset/feat_fold
-  feat_importance: /sensorsbp/datasets/splits/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
+  subject_dict: ./datasets/splitted/${exp.data_name}_dataset/feat_fold
+  feat_importance: ./datasets/splitted/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
   loader: feature
   cv: cv
 param_loader:
