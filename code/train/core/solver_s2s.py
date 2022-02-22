@@ -248,6 +248,8 @@ class Solver:
             out_metric.update(tmp_metric)
         
         results['out_metric'] = out_metric 
+        
+        os.makedirs(self.config.param_test.save_path, exist_ok=True)
         joblib.dump(results, self.config.param_test.save_path)  
         
         print(out_metric)   
