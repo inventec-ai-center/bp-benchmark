@@ -1,5 +1,5 @@
 path:
-  model_directory: ./model-{${exp.model_type}}
+  model_directory: ./model-${exp.model_type}
   mlflow_dir: ./mlruns
 exp:
   fs: 125
