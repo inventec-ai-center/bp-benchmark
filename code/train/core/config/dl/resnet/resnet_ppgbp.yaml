@@ -7,7 +7,7 @@ exp:
   random_state: 100
   data_name: ppgbp
   exp_name: ${exp.data_name}-${exp.model_type}
-  subject_dict: /sensorsbp/datasets/splits/${exp.data_name}_dataset/signal_fold
+  subject_dict: ./datasets/splitted/${exp.data_name}_dataset/signal_fold
   loader: waveform
   cv: cv
 param_loader:
@@ -20,7 +20,6 @@ param_loader:
 objective:
   type: val_mse
   mode: min
-# param for test
 param_test:
   save_path: /sensorsbp/prediction/ppgbp_dataset/rsnt_ppgbp_nobw.pkl
 param_trainer:
