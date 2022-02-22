@@ -138,7 +138,20 @@ class SolverF2l(Solver):
 
             #--- Save to model directory
             os.makedirs(self.config.path.model_directory, exist_ok=True)
-            
+            if self.config.exp.model_type=='mlp':
+                joblib.dump(model, "{}/{}-fold{}-test_sp={:.3f}-test_dp={:.3f}.ckpt".format(
+                                                                self.config.path.model_directory,
+                                                                self.config.exp.exp_name,
+                                                                foldIdx, 
+                                                                metrics[f"test/{target[0]}_mae"],
+                                                                metrics[f"test/{target[1]}_mae"]))
+            else:
+                joblib.dump(model, "{}/{}-fold{}-test_sp={:.3f}.ckpt".format(
+                                                                self.config.path.model_directory,
+                                                                self.config.exp.exp_name,
+                                                                foldIdx, 
+                                                                metrics[f"test/{target[0]}_mae"]))
+                
             
         #--- compute final metric
         out_metric = {}
