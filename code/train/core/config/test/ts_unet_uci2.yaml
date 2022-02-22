@@ -24,7 +24,7 @@ param_loader:
 param_test:
     model_path: ./model-${exp.model_type}/${exp.exp_name}-fold
     # - /sensorsbp/models/uci2_dataset/${param_test.exp_name}/epoch=03-val_mse=0.012.ckpt
-    save_path: /sensorsbp/prediction/${data_name}_dataset/${exp.exp_name}.pkl
+    save_path: ../../prediction/${exp.data_name}_dataset/${exp.exp_name}.pkl
 
 param_model:
   N_epoch: 256
