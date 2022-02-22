@@ -64,8 +64,8 @@ exp:
     model_type: "lgb" #"attnunet1d"
     data_name: sensors
     exp_name: ${exp.data_name}-${exp.model_type}
-    subject_dict: ./datasets/splits/${exp.data_name}_dataset/feat_fold
-    feat_importance: ./datasets/splits/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
+    subject_dict: ../../datasets/splits/${exp.data_name}_dataset/feat_fold
+    feat_importance: ../../datasets/splits/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
     loader: "feature"
     cv: cv
 
