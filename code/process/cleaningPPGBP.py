@@ -222,8 +222,8 @@ def main(args):
 
 	#---------- Feature generation ----------#
 	_print_step("Segment removal by feature generation",cl_log)
-
-	df = df.drop(index=444).reset_index(drop=True) ## Missed bad quality signal
+	
+	df = df.drop(index=df[df.trial=='203_3'].index[0]).reset_index(drop=True) ## Missed bad quality signal
 
 	data_feats, data_raw = _compute_features_df(df, args)
 	data_raw=data_raw[original_columns]
