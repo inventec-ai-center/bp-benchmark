@@ -1,6 +1,6 @@
 #%%
 from core.utils import log_params_mlflow, log_hydra_mlflow
-from core.solver_ml import SolverML
+from core.solver_f2l import SolverF2l
 from time import time, ctime
 
 import coloredlogs, logging
@@ -12,7 +12,6 @@ from pathlib import Path
 
 import hydra
 from hydra import utils
-import omegaconf
 import mlflow as mf
 from mlflow.tracking.client import MlflowClient
 
@@ -73,7 +72,7 @@ def main(config):
     # =============================================================================
     # Setup Solver
     # =============================================================================
-    solver = SolverML(config)
+    solver = SolverF2l(config)
 
 #%%
     # =============================================================================
