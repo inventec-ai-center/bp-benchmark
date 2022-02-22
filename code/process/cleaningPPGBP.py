@@ -171,6 +171,11 @@ def main(args):
 
 	os.makedirs(os.path.dirname(args.path.log), exist_ok=True)
 	cl_log = open(args.path.log, "w") ## Read logging file
+
+	## Create the dirs for the ouput data if do not exist
+	os.makedirs(os.path.dirname(args.path.save_name_feats), exist_ok=True)
+	os.makedirs(os.path.dirname(args.path.save_name), exist_ok=True)
+
 	
 	df = pd.read_pickle(args.path.data) ## Read dataset
 	original_columns = df.columns ## Save original columns

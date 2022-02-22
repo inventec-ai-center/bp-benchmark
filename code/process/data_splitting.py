@@ -126,6 +126,9 @@ def main(config):
     np.random.seed(config.param_split.random_state)
     random.seed(config.param_split.random_state)
 
+    ## Create the dirs for the ouput data if do not exist
+    os.makedirs(os.path.dirname(config.path.split_df_path), exist_ok=True)
+
     data_splitting(config)
 
     # load result and get naive

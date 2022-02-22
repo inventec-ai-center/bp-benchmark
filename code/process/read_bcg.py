@@ -16,6 +16,10 @@ def my_resample(sig, old_fs, new_fs):
     return resample(sig, re_size)
 
 def main(args):
+
+    ## Create the dirs for the ouput data if do not exist
+    os.makedirs(os.path.dirname(args.save_name), exist_ok=True)
+
     path_data_BCG = args.data
     
     print('Reading the data...')

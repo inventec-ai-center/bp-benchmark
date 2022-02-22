@@ -12,6 +12,10 @@ from tqdm import tqdm
 from core.lib.preprocessing import align_pair
 
 def main(args):
+
+    ## Create the dirs for the ouput data if do not exist
+    os.makedirs(os.path.dirname(args.save_name), exist_ok=True)
+
     print('Reading data...')
     df = pd.read_csv(args.rec2subid)
     path = args.data
