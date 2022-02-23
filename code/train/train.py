@@ -62,11 +62,6 @@ def main(args):
     time_now = time()
     logger.warning(f"Time Used: {ctime(time_now-time_start)}")
 
-    #--- remove automatically generated folder, since models are saved in mlflow folder
-    pytorch_lightning_ckpt_dir = Path("./lightning_logs/")
-    if pytorch_lightning_ckpt_dir.exists(): rmtree(pytorch_lightning_ckpt_dir)
-
-
 
 if __name__ == '__main__':
     parser = get_parser()
