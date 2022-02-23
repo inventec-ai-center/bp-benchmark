@@ -6,6 +6,7 @@ exp:
   N_fold: 5
   random_state: 100
   data_name: ppgbp
+  model_type: resnet1d
   exp_name: ${exp.data_name}-${exp.model_type}
   subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
   loader: waveform
