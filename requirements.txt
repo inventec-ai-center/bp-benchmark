@@ -12,6 +12,7 @@ scikit-multilearn==0.2.0
 lightgbm==3.2.1
 
 # data loading tool
+mat73=='0.52'
 biosppy==0.6.1
 pyampd==0.0.1
 wfdb==3.4.0
