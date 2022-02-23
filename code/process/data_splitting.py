@@ -2,7 +2,6 @@
 from skmultilearn.model_selection import IterativeStratification
 from skmultilearn.model_selection import iterative_train_test_split
 from collections import Counter
-from matplotlib import pyplot as plt
 import random
 import numpy as np
 import pandas as pd
