@@ -9,7 +9,7 @@ exp:
   data_name: bcg
   exp_name: ${exp.data_name}-${exp.model_type}-DP
   subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
-  feat_importance: ../../datasets/splitted/${exp.data_name}_dataset/featImportance-${param_loader.label}.pkl
+  feat_importance: ../../datasets/splitted/${exp.data_name}_dataset/featImportance-DP.pkl
   loader: feature
   cv: cv
 param_loader:
