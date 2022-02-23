@@ -168,7 +168,7 @@ def _compute_features_df(df, args):
 	len_=df.signal.map(len)
 	idx_ = len_[len_!=len_.iloc[0]].index
 	for i in idx_:
-    	df.at[i,'signal'] = df.loc[i,'signal'][:len_.iloc[0]]
+		df.at[i,'signal'] = df.loc[i,'signal'][:len_.iloc[0]]
 
 	return data_feats, df
 
