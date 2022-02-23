@@ -8,6 +8,10 @@ data: "../../datasets/raw/PPGBP/"
 # File name to save the data
 save_name: "../../datasets/segmented/PPGBP.pkl"
 
+# File name with the order of the files to read.
+# If not exist, the order of raw data directory will be used.
+order_file: "./core/config/segmentation/ppgbp_order.csv"
+
 #Original frequency sampling rate
 fs: 1000
 

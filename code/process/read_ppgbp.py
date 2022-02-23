@@ -34,7 +34,18 @@ def main(args):
 
     path_subjects = path_data_PPGBP+'0_subject/'
     df = {'patient':[],'trial':[],'signal':[]}
-    for f in tqdm(listdir(path_subjects)):
+
+    if os.path.exists(args.order_file):
+        print('Predefined order...')
+        import csv
+        with open(args.order_file) as csvfile:
+            csv_file = csv.reader(csvfile)
+            listdir_v = [row for row in csv_file][0]
+    else:
+        print('Folder order...')
+        listdir_v = listdir(path_subjects)
+
+    for f in tqdm(listdir_v):
         if isfile(join(path_subjects, f)):
             file = f
             pat_id = file.split('_')[0]
@@ -45,7 +56,7 @@ def main(args):
             df['trial'].append(trial)
             df['signal'].append(ppg)
     df = pd.DataFrame(df)
-    df=pd.merge(df_info,df,on='patient') 
+    df=pd.merge(df_info,df,on='patient')
 
     #Ordering the columns
     labels = ['patient','trial','SP','DP']
