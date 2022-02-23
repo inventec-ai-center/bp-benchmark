@@ -65,7 +65,6 @@ def main(args):
         columns.remove(l)  
     df = df[['patient','trial','SP','DP']+columns]
 
-
     ## Resampling
     if args.resampling != -1:
         print('Resampling the data...')
@@ -73,7 +72,6 @@ def main(args):
     else:
         fs = args.fs
         
-
     print('Saving the data...')
     df.to_pickle(args.save_name)
 
