@@ -248,7 +248,7 @@ class Solver:
         
         results['out_metric'] = out_metric 
         
-        os.makedirs(self.config.param_test.save_path, exist_ok=True)
+        os.makedirs(os.path.dirname(self.config.param_test.save_path), exist_ok=True)
         joblib.dump(results, self.config.param_test.save_path)  
         
         print(out_metric)   
