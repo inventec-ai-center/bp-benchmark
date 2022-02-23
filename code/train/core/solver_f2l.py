@@ -110,8 +110,7 @@ class SolverF2l(Solver):
             val_df = pd.concat(np.array(all_split_df)[folds_val])
             test_df = pd.concat(np.array(all_split_df)[folds_test])
         
-            if self.config.exp.subject_dict.endswith('fold'):
-                train_df, val_df, test_df = norm_data(train_df, val_df, test_df)
+            train_df, val_df, test_df = norm_data(train_df, val_df, test_df)
                 
             dm.setup_kfold(train_df, val_df, test_df)
             
