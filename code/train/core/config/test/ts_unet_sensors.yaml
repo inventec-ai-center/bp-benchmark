@@ -22,7 +22,7 @@ param_loader:
 # --------------------------------------------------------------------------------------------------
 # param for test
 param_test:
-    model_path: ./model-${exp.model_type}/${exp.exp_name}-fold
+    model_path: ../../models/model-${exp.model_type}/${exp.exp_name}-fold
     # - /sensorsbp/models/${exp.dataset}/${param_test.exp_name}/epoch=89-val_mse=0.013.ckpt
     # - /sensorsbp/models/${exp.dataset}/${param_test.exp_name}/epoch=55-val_mse=0.012.ckpt 
     # - /sensorsbp/models/${exp.dataset}/${param_test.exp_name}/epoch=85-val_mse=0.012.ckpt
