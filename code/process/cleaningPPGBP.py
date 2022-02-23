@@ -164,6 +164,12 @@ def _compute_features_df(df, args):
 	data_feats = data_feats[keep_mask].reset_index(drop=True)
 	df = df[keep_mask].reset_index(drop=True)
 
+	# Remove longer signals
+	len_=df.signal.map(len)
+	idx_ = len_[len_!=len_.iloc[0]].index
+	for i in idx_:
+    	df.at[i,'signal'] = df.loc[i,'signal'][:len_.iloc[0]]
+
 	return data_feats, df
 
 
@@ -222,7 +228,7 @@ def main(args):
 
 	#---------- Feature generation ----------#
 	_print_step("Segment removal by feature generation",cl_log)
-	
+
 	df = df.drop(index=df[df.trial=='203_3'].index[0]).reset_index(drop=True) ## Missed bad quality signal
 
 	data_feats, data_raw = _compute_features_df(df, args)
