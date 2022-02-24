@@ -8,7 +8,7 @@ import pandas as pd
 from core.solver_s2s import Solver
 from core.loaders import *
 from core.models import *
-from core.utils import (cal_metric, get_nested_fold_idx, norm_data, read_csv)
+from core.utils import (cal_metric, get_nested_fold_idx, norm_data)
 
 # Others
 import mlflow as mf
@@ -101,7 +101,7 @@ class SolverF2l(Solver):
         if self.config.exp.subject_dict.endswith('.pkl'):
             all_split_df = joblib.load(self.config.exp.subject_dict)
         elif self.config.exp.subject_dict.endswith('fold'):
-            all_split_df = [read_csv(f"{self.config.exp.subject_dict}_{i}.csv") for i in range(self.config.exp.N_fold)]
+            all_split_df = [pd.read_csv(f"{self.config.exp.subject_dict}_{i}.csv", float_precision='round_trip') for i in range(self.config.exp.N_fold)]
         
         #--- Nested cv 
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):

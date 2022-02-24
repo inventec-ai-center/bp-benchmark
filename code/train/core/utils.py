@@ -55,26 +55,6 @@ def mat2df(data):
         # df[k] = list(np.squeeze(v))
         df[k] = v
     return df
-
-def read_csv(savepath):
-    import csv
-    csv_read_data = []
-    with open(savepath, newline='') as csvfile:
-        rows = csv.reader(csvfile)
-        for rrr in rows:
-            csv_read_data.append(rrr)
-            
-    csv_read_data = pd.DataFrame(csv_read_data)
-    new_header = csv_read_data.iloc[0]
-    csv_read_data = csv_read_data[1:]
-    csv_read_data.columns = new_header
-    csv_read_data = csv_read_data.reset_index(drop=True)
-    csv_read_data[csv_read_data==''] = np.nan
-
-    cols = [c for c in list(csv_read_data.columns) if not c in ['patient', 'trial', 'SP', 'DP']]
-    csv_read_data[cols] = csv_read_data[cols].astype(np.float64)
-    csv_read_data[['SP', 'DP']] = csv_read_data[['SP', 'DP']].astype(np.float64)
-    return csv_read_data
         
 def norm_data(train_df, val_df, test_df, labels_feats=['patient','trial','SP', 'DP']):
     from sklearn.preprocessing import MinMaxScaler
