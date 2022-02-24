@@ -113,6 +113,10 @@ def data_splitting(config):
                 val_df = df[df.part.isin(config.param_split.val_part)]
                 ts_df = df[df.part.isin(config.param_split.ts_part)]
 
+        ts_df = ts_df.drop(columns=['part'])
+        val_df = val_df.drop(columns=['part'])
+        tr_df = tr_df.drop(columns=['part'])
+
         all_split_df = [ts_df, val_df, tr_df]
 
     for i in range(len(all_split_df)): ### remove 'label_class' column
