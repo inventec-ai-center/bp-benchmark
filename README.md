@@ -26,7 +26,7 @@ git checkout exp/sensors
 
 #-- Build docker image
 docker build -t bpimage .
-docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-algorithm/:/bp_benchmark -v ~/bp_benchmark/datasets/:/bp_benchmark/datasets -v ~/bp_benchmark/bp-algorithm/code/train/models/:/bp_benchmark/models bpimage bash
+docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-algorithm/:/bp_benchmark -v ~/bp_benchmark/datasets/:/bp_benchmark/datasets -v ~/bp_benchmark/models/:/bp_benchmark/models bpimage bash
 
 #-- Quick test the environment
 cd code/train
