@@ -3,7 +3,7 @@ path:
   mlflow_dir: ./mlruns
 exp:
   fs: 125
-  N_fold: 5
+  N_fold: 3
   random_state: 123456
   model_type: ada
   data_name: uci2
@@ -12,7 +12,6 @@ exp:
   feat_importance: ../../datasets/splitted/${exp.data_name}_dataset/featImportance-DP.pkl
   loader: feature
   cv: HOO
-  N_fols: 3
 param_loader:
   phase_match: true
   filtered: true
