@@ -33,6 +33,98 @@ cd code/train
 python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 ```
 
+## Datasets
+
+Before running the training pipeline, the user might download raw datasets and process them, or directly download the preprocessed datasets (recommended).
+
+#### Download raw datasets
+
+The raw datasets should be located under the directory `/bp_benchmark/datasets/raw/` to proceed with the processing stage.
+
+- sensors dataset might be found in [Zenodo's website](https://zenodo.org/record/4598938):
+``` bash
+mkdir /bp_benchmark/datasets/raw/sensors
+cd /bp_benchmark/datasets/raw/sensors
+
+# Download sensors dataset under datasets/raw/sensors
+wget https://zenodo.org/record/4598938/files/ABP_PPG.zip
+# Unzip the data
+unzip ABP_PPG.zip
+# move files to desired path
+mv ABP_PPG/* . 
+
+# OPTIONAL: remove unnecessary files
+rm -r ABP_PPG ABP_PPG.zip 'completed (copy).mat' completed.mat 
+```
+- UCI dataset might be downloaded from [UCI repository](https://archive.ics.uci.edu/ml/datasets/Cuff-Less+Blood+Pressure+Estimation#).
+```bash
+mkdir /bp_benchmark/datasets/raw/UCI
+cd /bp_benchmark/datasets/raw/UCI
+
+# Download UCI dataset under datasets/raw/UCI
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/00340/data.zip
+# Unzip the data
+unzip data.zip 
+
+# OPTIONAL: remove unnecessary files
+rm -r __MACOSX data.zip
+
+```
+- BCG dataset has to be downloaded manually from [IEEE*DataPort*'s site](https://ieee-dataport.org/open-access/bed-based-ballistocardiography-dataset) with an IEEE account. 
+```bash
+mkdir /bp_benchmark/datasets/raw/BCG
+cd /bp_benchmark/datasets/raw/BCG
+
+# > Manually download the data from IEEEDataPort and 
+# > Locate 'Data Files.zip' under /bp_benchmark/datasets/raw/BCG
+
+# Unzip the data
+unzip 'Data Files.zip' 
+# move files to desired path
+mv 'Data Files'/* .
+
+# OPTIONAL: remove unnecessary files
+rm -r 'Data Files'
+```
+Before proceeding with the processing stage of BCG dataset, the Matlab's script `code/process/core/bcg_mat2csv.m` must be run with the raw data path as parameter. 
+```bash
+cd /bp_benchmark/code/process/core/bcg_mat2csv.m
+matlab -r "bcg_mat2csv('../../../datasets/raw/BCG')"
+```
+
+- PPGBP dataset might be found in [Figshare's site](https://figshare.com/articles/dataset/PPG-BP_Database_zip/5459299).
+```bash
+mkdir /bp_benchmark/datasets/raw/PPGBP
+cd /bp_benchmark/datasets/raw/PPGBP
+
+# Download PPGBP dataset under datasets/raw/PPGBP
+wget -O data.zip https://figshare.com/ndownloader/files/9441097
+# Unzip the data
+unzip data.zip 
+# move files to desired path
+mv 'Data File'/* .
+
+# OPTIONAL: remove unnecessary files
+rm -r 'Data File' data.zip 
+```
+
+#### Preprocessed datasets
+
+The preprocessed datasets might be found in the [<repo-name>'s website](). They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
+
+```bash
+mkdir /bp_benchmark/datasets/splitted/
+cd /bp_benchmark/datasets/splitted/
+
+# Download the dataset under /bp_benchmark/datasets/splitted/
+wget -O data.zip <link-to-figshare>
+# Unzip the data
+unzip data.zip 
+    
+# OPTIONAL: remove unnecessary files
+rm -r data.zip 
+```
+
 ## Processing
 
 This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction and data splitting for model validation.
