@@ -9,7 +9,7 @@ exp:
   data_name: sensors
   exp_name: ${exp.data_name}-${exp.model_type}-SP
   subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
-  feat_importance: ../../feat_improtance/${exp.data_name}_dataset/featImportance-SP.pkl
+  feat_importance: ../../feat_importance/${exp.data_name}_dataset/featImportance-SP.pkl
   loader: feature
   cv: cv
 param_loader:
