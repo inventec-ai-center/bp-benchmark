@@ -88,8 +88,8 @@ python data_splitting.py --config_file core/config/preprocessing/sensors_clean.y
 - All the config files of Feat2Lab approach are in `./core/config/ml/` 
 
 ```
-# Go to /sensorsbp/code/train
-cd /sensorsbp/code/train
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
 python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 ```
 
@@ -98,8 +98,8 @@ python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 - All the config files of Feat2Lab approach are in `./core/config/dl/resnet/` 
 
 ```
-# Go to /sensorsbp/code/train
-cd /sensorsbp/code/train
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
 python train.py --config_file core/config/dl/resnet/resnet_bcg.yaml
 ```
 
@@ -108,12 +108,12 @@ python train.py --config_file core/config/dl/resnet/resnet_bcg.yaml
 - All the config files of Feat2Lab approach are in `./core/config/dl/unet/` 
 
 ```
-# Go to /sensorsbp/code/train
-cd /sensorsbp/code/train
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
 python train.py --config_file core/config/dl/resnet/unet_bcg.yaml
 ```
 
-The models are save in the path indicated in the config_file (`${path.model_directory}`), by default it will be in `/sensorsbp/code/train/model-${exp.model_type}`.
+The models are save in the path indicated in the config_file (`${path.model_directory}`), by default it will be in `/bp_benchmark/code/train/model-${exp.model_type}`.
 
 ## Tuning hyper-parameters with Hydra Optuna
 `tune.py -m`
@@ -129,8 +129,8 @@ The models are save in the path indicated in the config_file (`${path.model_dire
 @hydra.main(config_path='./core/config/tune/ml', config_name="lgb_sensors_SP")
 
 #======= In command line interface ======#
-# Go to /sensorsbp/code/train
-cd /sensorsbp/code/train
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
 python tune_ml.py -m
 ```
 
@@ -143,9 +143,24 @@ python tune_ml.py -m
 @hydra.main(config_path='./core/config/tune/dl', config_name="resnet_bcg_tune")
 
 #======= In command line interface ======#
-# Go to /sensorsbp/code/train
-cd /sensorsbp/code/train
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
 python tune.py -m
+```
+
+## Testing
+`test.py --config_file [CONFIG PATH]`
+* It tests on test set with the trained models specified in the input config file.
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/train/core/config/test`
+
+#### Testing Sig2Lab models
+
+- All the config files of Feat2Lab approach are in `./core/config/test/dl/` 
+
+```
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python test.py --config_file core/config/test/dl/ts_rsnt_bcg.yaml
 ```
 
 ## Checking results in MLflow
@@ -156,7 +171,7 @@ python tune.py -m
 tmux new -s mlflow
 
 # Step 2: in the new session setup mlflow server
-cd /sensorsbp/code/train
+cd /bp_benchmark/code/train
 mlflow ui -h 0.0.0.0 -p 9181 --backend-store-uri ./mlruns/
 # leave the session with ^B+D
  
