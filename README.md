@@ -153,7 +153,7 @@ python tune.py -m
 * It tests on test set with the trained models specified in the input config file.
 * [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/train/core/config/test`
 
-#### Testing Sig2Lab models
+#### Testing Sig2Lab or Sig2Sig models
 
 - All the config files of Feat2Lab approach are in `./core/config/test/dl/` 
 
