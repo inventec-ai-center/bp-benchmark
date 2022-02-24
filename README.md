@@ -37,7 +37,7 @@ python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 
 Before running the training pipeline, the user might download raw datasets and process them, or directly download the preprocessed datasets (recommended).
 
-#### Download raw datasets
+#### Raw datasets
 
 The raw datasets should be located under the directory `/bp_benchmark/datasets/raw/` to proceed with the processing stage.
 
