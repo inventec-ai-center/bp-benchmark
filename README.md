@@ -151,21 +151,18 @@ python tune.py -m
 ## Checking results in MLflow
 ``` bash
 # Setup mlflow server in background
-# Step 1: install tmux (or screen) to run multiple sessions
-apt-get update
-apt-get install tmux
 
-# Step 2: open a new session for mlflow
+# Step 1: open a new session with tmux for mlflow
 tmux new -s mlflow
 
-# Step 3: in the new session setup mlflow server
+# Step 2: in the new session setup mlflow server
 cd /sensorsbp/code/train
 mlflow ui -h 0.0.0.0 -p 9181 --backend-store-uri ./mlruns/
 # leave the session with ^B+D
  
-# Step 4: forward the port 9181
+# Step 3: forward the port 9181
 ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to working_server] -i [ssh key to working_server]
 
-# Step 5: now you can browse mlflow server in your browser
+# Step 4: now you can browse mlflow server in your browser
 # open a new tab in your browser and type http://localhost:9181/
 ```
