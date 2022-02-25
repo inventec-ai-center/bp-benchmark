@@ -13,9 +13,6 @@ exp:
 # --------------------------------------------------------------------------------------------------
 # data laading / features
 param_loader:
-    phase_match: True
-    filtered: True
-    feat: [None] #["vpg"] 
     ppg_norm: loc_z # glob_mm, glob_z, loc_z, loc_mm
     bp_norm: glob_mm # glob_mm, glob_z, loc_z, loc_mm
 
@@ -23,6 +20,11 @@ param_loader:
 # param for test
 param_test:
     model_path: ../../models/model-${exp.model_type}/${exp.exp_name}-fold
+    # - ../mlruns/44/bb4bb7ea23b340daab4787a5a9fb589a/artifacts/restored_model_checkpoint/epoch=31-val_mse=0.035.ckpt
+    # - ../mlruns/44/7139ba64672d484f996a29805fef61bf/artifacts/restored_model_checkpoint/epoch=79-val_mse=0.039.ckpt
+    # - ../mlruns/44/8eb416fad4c149a88ed4a1d6f2d957d7/artifacts/restored_model_checkpoint/epoch=53-val_mse=0.037.ckpt
+    # - ../mlruns/44/8ec6a3df519b4652bad3b93ad1a98011/artifacts/restored_model_checkpoint/epoch=59-val_mse=0.022.ckpt
+    # - ../mlruns/44/ae7e5f866e9a4dbaacfe5cc31dcf0eec/artifacts/restored_model_checkpoint/epoch=97-val_mse=0.042.ckpt
     save_path: ../../prediction/${exp.data_name}_dataset/${exp.exp_name}.pkl
 
 
