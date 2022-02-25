@@ -35,7 +35,24 @@ python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
 
 ## Datasets
 
-Before running the training pipeline, the user might download raw datasets and process them, or directly download the preprocessed datasets (recommended).
+Before running the training pipeline, the user could directly download the preprocessed datasets (**recommended**), or download raw datasets and process them.
+
+#### Preprocessed datasets
+
+The preprocessed datasets might be found in the [<repo-name>'s website](). They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
+
+```bash
+mkdir /bp_benchmark/datasets/splitted/
+cd /bp_benchmark/datasets/splitted/
+
+# Download the dataset under /bp_benchmark/datasets/splitted/
+wget -O data.zip <link-to-figshare>
+# Unzip the data
+unzip data.zip 
+    
+# OPTIONAL: remove unnecessary files
+rm -r data.zip 
+```
 
 #### Raw datasets
 
@@ -106,23 +123,6 @@ mv 'Data File'/* .
 
 # OPTIONAL: remove unnecessary files
 rm -r 'Data File' data.zip 
-```
-
-#### Preprocessed datasets
-
-The preprocessed datasets might be found in the [<repo-name>'s website](). They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
-
-```bash
-mkdir /bp_benchmark/datasets/splitted/
-cd /bp_benchmark/datasets/splitted/
-
-# Download the dataset under /bp_benchmark/datasets/splitted/
-wget -O data.zip <link-to-figshare>
-# Unzip the data
-unzip data.zip 
-    
-# OPTIONAL: remove unnecessary files
-rm -r data.zip 
 ```
 
 ## Processing
