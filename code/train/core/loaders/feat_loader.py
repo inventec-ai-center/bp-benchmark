@@ -22,8 +22,6 @@ class FeatDataModule(pl.LightningDataModule):
             dataset = sensorsLoader(config=self.config, 
                                     data_df=data_df, 
                                     mode=mode,
-                                    phase_match=self.config.param_loader.phase_match,
-                                    filtered=self.config.param_loader.filtered,
                                     is_print=is_print)
         else:
             print("Get your aligned dataset ready!")
@@ -41,11 +39,9 @@ class FeatDataModule(pl.LightningDataModule):
 
 #%%
 class sensorsLoader():
-    def __init__(self, config, data_df, mode="train", phase_match=True, filtered=True, is_print=False):
+    def __init__(self, config, data_df, mode="train", is_print=False):
         self.config = config
         self.data_df = data_df
-        self.filtered = filtered
-        self.phase_match = phase_match
         self.mode = mode
         self._normalization()
         self._get_signal_feature()
