@@ -10,33 +10,13 @@ exp:
   exp_name: ${exp.data_name}-${exp.model_type}-SP
   subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
   feat_importance: ../../feat_importance/${exp.data_name}_dataset/featImportance-SP.pkl
-  loader: feature
-  cv: HOO
+  loader: feature  # feature, waveform
+  cv: HOO  # cv, HOO
 param_loader:
-  phase_match: true
-  filtered: true
-  feat:
-  - None
-  ppg_norm: None
-  bp_norm: None
+  ppg_norm: None  # feat label use norm_data function to normalize
+  bp_norm: None  # norm. of SP and DP, feature input already norm. bp labels
   label: SP
   rate_features: 0.7
-objective:
-  type: val_mae
-  mode: min
-param_trainer:
-  max_epochs: 1
-  check_val_every_n_epoch: 1
-  progress_bar_refresh_rate: 5
-  gpus: '1'
-  auto_lr_find: true
-  auto_scale_batch_size: binsearch
-param_early_stop:
-  monitor: ${objective.type}
-  min_delta: 0.0
-  patience: 5
-  verbose: true
-  mode: ${objective.mode}
 param_model:
   n_estimators: 50
   max_depth: 8
@@ -45,10 +25,3 @@ param_model:
   min_samples: 50
   subsample: 0.5
   colsample_bytree: 0.3
-logger:
-  param_ckpt:
-    monitor: ${objective.type}
-    filename: '{epoch:02d}-{${objective.type}:.3f}'
-    save_top_k: 1
-    mode: ${objective.mode}
-  log_lightning: false
