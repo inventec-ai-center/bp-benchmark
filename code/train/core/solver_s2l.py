@@ -5,6 +5,7 @@ from shutil import rmtree
 import pandas as pd
 import numpy as np 
 from scipy.io import loadmat
+from glob import glob
 
 # Load loaders
 from core.loaders import *
@@ -201,8 +202,8 @@ class SolverS2l(Solver):
 
             #--- load trained model
             trainer = MyTrainer()
-
-            model = self._get_model(ckpt_path_abs=self.config.param_test.model_path[foldIdx])
+            ckpt_apth_abs = glob(f'{self.config.param_test.model_path}{foldIdx}' + '*.ckpt')[0]
+            model = self._get_model(ckpt_path_abs=ckpt_apth_abs)
             model.eval()
             trainer.model = model
             
