@@ -15,8 +15,8 @@ exp:
 param_loader:
   ppg_norm: None  # feat label use norm_data function to normalize
   bp_norm: None  # norm. of SP and DP, feature input already norm. bp labels
-  label: DP  # SP, DP, ["SP","DP"]
-  rate_features: 0.2 # rate of features being selected for training 
+  label: DP
+  rate_features: 0.2
 param_model:
   n_estimators: 400
   max_depth: 5
