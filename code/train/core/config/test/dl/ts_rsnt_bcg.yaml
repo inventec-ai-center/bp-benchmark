@@ -13,9 +13,6 @@ exp:
 # --------------------------------------------------------------------------------------------------
 # data laading / features
 param_loader:
-    phase_match: True
-    filtered: True
-    feat: [None] #["vpg"] 
     ppg_norm: loc_z # glob_mm, glob_z, loc_z, loc_mm
     bp_norm: glob_mm # glob_mm, glob_z, loc_z, loc_mm
 
