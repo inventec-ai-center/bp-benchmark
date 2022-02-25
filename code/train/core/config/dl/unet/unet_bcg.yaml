@@ -12,10 +12,6 @@ exp:
   loader: waveform
   cv: cv
 param_loader:
-  phase_match: true
-  filtered: true
-  feat:
-  - None
   ppg_norm: loc_z
   bp_norm: glob_mm
 objective:
@@ -58,4 +54,3 @@ logger:
     filename: '{epoch:02d}-{${objective.type}:.3f}'
     save_top_k: 1
     mode: ${objective.mode}
-  log_lightning: false
