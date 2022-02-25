@@ -25,14 +25,14 @@ def main(args):
 
     path_data_PPGBP = args.data 
 
-    df_info=pd.read_excel(path_data_PPGBP+'PPG-BP-dataset.xlsx', engine='openpyxl')
+    df_info=pd.read_excel(path_data_PPGBP+'/PPG-BP dataset.xlsx', engine='openpyxl', header=1)
     df_info = df_info.drop(columns='Num.')
     df_info = df_info.rename(columns={'subject_ID':'patient','Systolic Blood Pressure(mmHg)':'SP','Diastolic Blood Pressure(mmHg)':'DP'})
 
 
     print('Reading the data...')
 
-    path_subjects = path_data_PPGBP+'0_subject/'
+    path_subjects = path_data_PPGBP+'/0_subject/'
     df = {'patient':[],'trial':[],'signal':[]}
 
     if os.path.exists(args.order_file):
