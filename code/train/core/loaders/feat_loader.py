@@ -18,14 +18,11 @@ class FeatDataModule(pl.LightningDataModule):
         self.folds_test = folds_test
 
     def _get_loader(self, data_df, mode, is_print=False):
-        if self.config.param_loader.phase_match:
-            dataset = sensorsLoader(config=self.config, 
-                                    data_df=data_df, 
-                                    mode=mode,
-                                    is_print=is_print)
-        else:
-            print("Get your aligned dataset ready!")
-
+        dataset = sensorsLoader(config=self.config, 
+                                data_df=data_df, 
+                                mode=mode,
+                                is_print=is_print)
+        
         return DataLoader(dataset=dataset, batch_size=dataset.__len__(), shuffle=(mode=="train"))
 
     def train_dataloader(self, is_print=False):

@@ -28,16 +28,11 @@ class WavDataModule(pl.LightningDataModule):
         self.folds_test = folds_test
 
     def _get_loader(self, data_df, mode, is_print=False):
-        if self.config.param_loader.phase_match:
-            dataset = sensorsLoader(config=self.config, 
-                                    data_df=data_df, 
-                                    mode=mode,
-                                    is_print=is_print)
-        else:
-            print("Get your aligned dataset ready!")
+        dataset = sensorsLoader(config=self.config, 
+                                data_df=data_df, 
+                                mode=mode,
+                                is_print=is_print)
 
-        # if mode == "test": batch_size=512
-        # else: batch_size = self.config.param_model.batch_size
         batch_size = self.config.param_model.batch_size
         return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=(mode=="train"), 
                           worker_init_fn=seed_worker)
