@@ -15,7 +15,7 @@ class Resnet1d(Regressor):
         self.model = ResNet1D(param_model.in_channel, param_model.base_filters,
                                 param_model.first_kernel_size, param_model.kernel_size, 
                                 param_model.stride, param_model.groups, param_model.n_block,
-                                param_model.output_size, param_model.is_se)
+                                param_model.output_size, param_model.is_se, param_model.se_ch_low)
     def _shared_step(self, batch):
         x_ppg, y, x_abp, peakmask, vlymask = batch
         pred = self.model(x_ppg)
@@ -81,7 +81,7 @@ class ResNet1D(nn.Module):
     """
 
     def __init__(self, in_channels, base_filters, first_kernel_size, kernel_size, stride, 
-                        groups, n_block, output_size, is_se=False, downsample_gap=2, 
+                        groups, n_block, output_size, is_se=False, se_ch_low=4, downsample_gap=2, 
                         increasefilter_gap=2, use_bn=True, use_do=True, verbose=False):
         super(ResNet1D, self).__init__()
         
@@ -94,6 +94,7 @@ class ResNet1D(nn.Module):
         self.use_bn = use_bn
         self.use_do = use_do
         self.is_se = is_se
+        self.se_ch_low = se_ch_low
 
         self.downsample_gap = downsample_gap # 2 for base model
         self.increasefilter_gap = increasefilter_gap # 4 for base model
@@ -140,7 +141,8 @@ class ResNet1D(nn.Module):
                 use_bn = self.use_bn, 
                 use_do = self.use_do, 
                 is_first_block=is_first_block,
-                is_se=self.is_se)
+                is_se=self.is_se,
+                se_ch_low=self.se_ch_low)
             self.basicblock_list.append(tmp_block)
 
         # final prediction

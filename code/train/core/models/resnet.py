@@ -65,10 +65,10 @@ class MyMaxPool1dPadSame(nn.Module):
 
 class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
-    def __init__(self, c, r=16):
+    def __init__(self, c, r=16, se_ch_low=4):
         super().__init__()
         h = c // r
-        if h<4: h = 4
+        if h<4: h = se_ch_low
         self.squeeze = nn.AdaptiveAvgPool1d(1)
         self.excitation = nn.Sequential(
             nn.Linear(c, h, bias=False),
@@ -87,8 +87,8 @@ class BasicBlock(nn.Module):
     """
     ResNet Basic Block
     """
-    def __init__(self, in_channels, out_channels, kernel_size, stride, 
-                groups, downsample, use_bn, use_do, is_first_block=False, is_se=False):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, groups, downsample, 
+                 use_bn, use_do, is_first_block=False, is_se=False, se_ch_low=4):
         super(BasicBlock, self).__init__()
         
         self.in_channels = in_channels
@@ -131,7 +131,7 @@ class BasicBlock(nn.Module):
         self.max_pool = MyMaxPool1dPadSame(kernel_size=self.stride)
 
         # Squeeze and excitation layer
-        if self.is_se:  self.se = SE_Block(out_channels, 16)
+        if self.is_se:  self.se = SE_Block(out_channels, 16, se_ch_low)
 
     def forward(self, x):
         if x.shape[0]<4:    self.use_bn = False
