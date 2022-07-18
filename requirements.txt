@@ -19,6 +19,8 @@ mlflow==1.18.0
 
 # DL tool
 pytorch-lightning==1.3.5
+torchmetrics==0.6.0
+protobuf==3.20.0
 
 # data visualization
 coloredlogs==15.0
