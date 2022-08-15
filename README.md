@@ -202,7 +202,7 @@ python train.py --config_file core/config/dl/resnet/resnet_bcg.yaml
 ```
 # Go to /bp_benchmark/code/train
 cd /bp_benchmark/code/train
-python train.py --config_file core/config/dl/resnet/unet_bcg.yaml
+python train.py --config_file core/config/dl/unet/unet_bcg.yaml
 ```
 
 The models are save in the path indicated in the config_file (`${path.model_directory}`), by default it will be in `/bp_benchmark/code/train/model-${exp.model_type}`.
