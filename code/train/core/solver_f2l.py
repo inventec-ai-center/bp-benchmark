@@ -160,5 +160,7 @@ class SolverF2l(Solver):
             tmp_metric = cal_metric(err_dict, mode=mode)
             out_metric.update(tmp_metric)            
         
+        logger.info(f"\t {out_metric}")
+        
         return out_metric
 
