@@ -82,6 +82,7 @@ def main(config):
     # redirect the data path under the multirun folder
     with omegaconf.open_dict(config):
         config.exp.subject_dict = str((Path(utils.get_original_cwd())/config.exp.subject_dict).absolute())
+        config.exp.feat_importance = str((Path(utils.get_original_cwd())/config.exp.feat_importance).absolute())
        
     mf.set_tracking_uri(MLRUNS_DIR)
     mf.set_experiment(config.exp.exp_name)
