@@ -304,6 +304,8 @@ def _compute_features_df(df, args):
 
     data_feats = data_feats[keep_mask].reset_index(drop=True)
     df = df[keep_mask].reset_index(drop=True)
+    
+    data_feats = data_feats.replace([np.inf, -np.inf], 0)
 
     return data_feats, df
 

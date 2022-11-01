@@ -21,9 +21,10 @@ from scipy.io import loadmat, savemat
 import re
 
                 
-datasets = ['PPGBP', 'sensors', 'BCG', 'UCI']
+#datasets = ['PPGBP', 'sensors', 'BCG', 'UCI']
+datasets = ['UCI']
 for dataset in datasets:
-    dataset0 = dataset if dataset!='uci2' else 'uci'
+    dataset0 = dataset if dataset!='UCI' else 'uci2'
     dataset0 = dataset0.lower()
     data = joblib.load(f'{DATA_PATH}/{dataset}.pkl')
     for i, d in enumerate(data):
@@ -69,9 +70,10 @@ import joblib
 import pandas as pd
 from pandas.testing import assert_frame_equal
                 
-datasets = ['PPGBP', 'sensors', 'BCG', 'UCI']
+#datasets = ['PPGBP', 'sensors', 'BCG', 'UCI']
+datasets = ['UCI']
 for dataset in datasets:
-    dataset0 = dataset if dataset!='uci2' else 'uci'
+    dataset0 = dataset if dataset!='UCI' else 'uci2'
     dataset0 = dataset0.lower()
     data = joblib.load(f'{DATA_PATH}/{dataset}_feats.pkl')
     for i, d in enumerate(data):
