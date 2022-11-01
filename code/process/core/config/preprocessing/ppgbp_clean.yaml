@@ -10,22 +10,16 @@ path:
 # frequency sampling rate of the signals
 fs: 125
 
-# Filter by abnormal BP values. Set the valid ranges of BP
+# Filter by abnormal ABP/BP values. Set the valid ranges of BP
 bp_filter:
     up_sbp: 220 # Max value for SBP
-    lo_sbp: 80 # Min value for SBP
-    up_dbp: 120 # Max value for DBP
-    lo_dbp: 50 # Min value for DBP
-    up_diff: 120 # Max value for SBP-DBP
-    lo_diff: 20 # Min value for SBP-DBP
+    lo_dbp: 30 # Min value for DBP
+    lo_diff: 10 # Min value for SBP-DBP
 
-# Number of standard deviations to identify peak or valley as outlier
-th_out: 2.6
-
-# Limitation of cycle length (p2p & v2v distance threshold in seconds)
+# Limitation in terms of BPM at rest 
 cycle_len:
-    lo_p2p: 0.5 # shortest cycle
-    up_p2p: 1.5 # longest cycle
+    lo_bpm: 35 # minimum BPM 
+    up_bpm: 140 # maximum BPM
 
 # Parameters for butterworth band-pass filter (ONLY FOR features extraction).
 ppg_filter:
