@@ -116,6 +116,8 @@ def glob_demm(x, config, type='SP'):
         x_min, x_max = config.param_loader.DP_min, config.param_loader.DP_max
     elif type=='ppg':
         x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
+    elif type=='abp':
+        x_min, x_max = config.param_loader.abp_min, config.param_loader.abp_max
     return x * (x_max-x_min) + x_min
 
 def glob_mm(x, config, type='SP'): 
@@ -126,6 +128,8 @@ def glob_mm(x, config, type='SP'):
         x_min, x_max = config.param_loader.DP_min, config.param_loader.DP_max
     elif type=='ppg':
         x_min, x_max = config.param_loader.ppg_min, config.param_loader.ppg_max
+    elif type=='abp':
+        x_min, x_max = config.param_loader.abp_min, config.param_loader.abp_max
     return (x - x_min) / (x_max - x_min)
 
 def glob_dez(x, config, type='SP'): 
@@ -136,6 +140,8 @@ def glob_dez(x, config, type='SP'):
         x_mean, x_std = config.param_loader.DP_mean, config.param_loader.DP_std
     elif type=='ppg':
         x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
+    elif type=='abp':
+        x_mean, x_std = config.param_loader.abp_mean, config.param_loader.abp_std
     return x * (x_std + 1e-6) + x_mean
 
 def glob_z(x, config, type='sbp'): 
@@ -146,6 +152,8 @@ def glob_z(x, config, type='sbp'):
         x_mean, x_std = config.param_loader.DP_mean, config.param_loader.DP_std
     elif type=='ppg':
         x_mean, x_std = config.param_loader.ppg_mean, config.param_loader.ppg_std
+    elif type=='abp':
+        x_mean, x_std = config.param_loader.abp_mean, config.param_loader.abp_std
     return (x - x_mean)/(x_std + 1e-6)
 
 #%% Local normalization
@@ -269,6 +277,13 @@ def cal_statistics(config, all_df):
             config.param_loader[f'ppg_std'] = float(np.vstack(all_df['signal']).std())
             config.param_loader[f'ppg_min'] = float(np.vstack(all_df['signal']).min())
             config.param_loader[f'ppg_max'] = float(np.vstack(all_df['signal']).max())
+            
+        if 'abp_signal' in all_df.columns:
+            config.param_loader[f'abp_mean'] = float(np.vstack(all_df['abp_signal']).mean())
+            config.param_loader[f'abp_std'] = float(np.vstack(all_df['abp_signal']).std())
+            config.param_loader[f'abp_min'] = float(np.vstack(all_df['abp_signal']).min())
+            config.param_loader[f'abp_max'] = float(np.vstack(all_df['abp_signal']).max())
+            
     return config
 
 #%% Compute metric

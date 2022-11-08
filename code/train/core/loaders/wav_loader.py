@@ -74,7 +74,7 @@ class sensorsLoader():
             self.ppg_denorm = loc_dez
         elif self.config.param_loader.ppg_norm=='loc_mm':
             self.ppg_norm = loc_mm 
-            self.ppg_denorm = loc_dez   
+            self.ppg_denorm = loc_demm   
         elif self.config.param_loader.ppg_norm=='glob_z':
             self.ppg_norm = glob_z   
             self.ppg_denorm = glob_dez 
@@ -147,7 +147,7 @@ class sensorsLoader():
         else:
             self.all_ppg = all_ppg
         
-        all_abp = self.bp_norm(np.stack(self.data_df["abp_signal"].values), self.config, type="SP")
+        all_abp = self.bp_norm(np.stack(self.data_df["abp_signal"].values), self.config, type="abp")
 
         all_sbp = self.bp_norm(np.stack(self.data_df["SP"].values).reshape(-1,1), self.config, type="SP")
         all_dbp = self.bp_norm(np.stack(self.data_df["DP"].values).reshape(-1,1), self.config, type="DP")
