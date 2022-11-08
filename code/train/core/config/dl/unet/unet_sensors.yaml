@@ -21,7 +21,7 @@ param_trainer:
   max_epochs: 100
   check_val_every_n_epoch: 2
   progress_bar_refresh_rate: 5
-  gpus: '1'
+  gpus: '0'
   auto_lr_find: true
   auto_scale_batch_size: binsearch
 param_early_stop:
