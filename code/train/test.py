@@ -26,7 +26,7 @@ def main(args):
     config = OmegaConf.load(args.config_file)
     if config.exp.model_type in ['unet1d', 'ppgiabp']:
         solver = solver_s2s(config)
-    elif config.exp.model_type in ['resnet1d']:
+    elif config.exp.model_type in ['resnet1d','spectroresnet']:
         solver = solver_s2l(config)
 
     solver.test()

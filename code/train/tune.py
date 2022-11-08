@@ -75,7 +75,7 @@ def main(config):
     # =============================================================================
     if config.exp.model_type in ['unet1d', 'ppgiabp']:
         solver = solver_s2s(config)
-    elif config.exp.model_type in ['resnet1d']:
+    elif config.exp.model_type in ['resnet1d','spectroresnet']:
         solver = solver_s2l(config)
 
 #%%
