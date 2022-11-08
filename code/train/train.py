@@ -46,7 +46,7 @@ def main(args):
     #--- get the solver
     if config.exp.model_type in ['unet1d', 'ppgiabp']:
         solver = solver_s2s(config)
-    elif config.exp.model_type in ['resnet1d']:
+    elif config.exp.model_type in ['resnet1d','spectroresnet']:
         torch.use_deterministic_algorithms(True)
         solver = solver_s2l(config)
     else:
