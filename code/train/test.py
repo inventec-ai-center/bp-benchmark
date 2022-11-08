@@ -24,9 +24,9 @@ def main(args):
 
     time_start = time()
     config = OmegaConf.load(args.config_file)
-    if config.exp.model_type=='unet1d':
+    if config.exp.model_type in ['unet1d', 'ppgiabp']:
         solver = solver_s2s(config)
-    elif config.exp.model_type=='resnet1d':
+    elif config.exp.model_type in ['resnet1d']:
         solver = solver_s2l(config)
 
     solver.test()

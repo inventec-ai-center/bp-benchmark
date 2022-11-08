@@ -37,6 +37,8 @@ class Solver:
     def _get_loader(self):
         if self.config.exp.loader=="waveform":
             return WavDataModule(self.config)
+        elif self.config.exp.loader=="mabp":
+            return MABPDataModule(self.config)
         elif self.config.exp.loader=="feature":
             return FeatDataModule(self.config)
 
@@ -45,12 +47,16 @@ class Solver:
         if not ckpt_path_abs:
             if self.config.exp.model_type == "unet1d":
                 model = Unet1d(self.config.param_model, random_state=self.config.exp.random_state)
+            elif self.config.exp.model_type == "ppgiabp":
+                model = PPGIABP(self.config.param_model, random_state=self.config.exp.random_state)
             else:
                 model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
             return model
         else:
             if self.config.exp.model_type == "unet1d":
                 model = Unet1d.load_from_checkpoint(ckpt_path_abs)
+            elif self.config.exp.model_type == "ppgiabp":
+                model = PPGIABP.load_from_checkpoint(ckpt_path_abs)
             else:
                 model = eval(self.config.exp.model_type).load_from_checkpoint(ckpt_path_abs)
             return model
@@ -64,11 +70,16 @@ class Solver:
         bp_denorm = loader.dataset.bp_denorm
         
         #--- Predict
-        true_abps = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'SP')
-        pred_abps = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'SP')
+        true_abps = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'abp')
+        pred_abps = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'abp')
         true_bps = outputs["true_bp"].numpy()
-        pred_bps = np.array([compute_sp_dp(p) for p in pred_abps])
-        naive_bps =  np.mean(dm.train_dataloader(is_print=False).dataset._target_data, axis=0)
+        if self.config.exp.model_type == "unet1d":
+            pred_bps = np.array([compute_sp_dp(p) for p in pred_abps])
+        elif self.config.exp.model_type == "ppgiabp":
+            mask = outputs['y_mask']==1
+            pred_bps = np.array([[np.max(pred_abps[i][mask[i]]),np.min(pred_abps[i][mask[i]])] for i in range(len(pred_abps))])
+            
+        naive_bps =  np.mean(dm.train_dataloader().dataset._target_data, axis=0)
         
         #--- Evaluate
         err_dict = {}

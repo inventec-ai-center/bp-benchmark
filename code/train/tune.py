@@ -19,7 +19,8 @@ from mlflow.tracking.client import MlflowClient
 
 
 #%%
-@hydra.main(config_path='./core/config/tune/dl', config_name="resnet_bcg_tune")
+#@hydra.main(config_path='./core/config/tune/dl', config_name="resnet_bcg_tune")
+@hydra.main(config_path='./core/config/tune/dl', config_name="unet_bcg_tune")
 def main(config):
     # =============================================================================
     # check config have been run
@@ -72,9 +73,9 @@ def main(config):
     # =============================================================================
     # Setup Solver
     # =============================================================================
-    if config.exp.model_type=='unet1d':
+    if config.exp.model_type in ['unet1d', 'ppgiabp']:
         solver = solver_s2s(config)
-    elif config.exp.model_type=='resnet1d':
+    elif config.exp.model_type in ['resnet1d']:
         solver = solver_s2l(config)
 
 #%%
