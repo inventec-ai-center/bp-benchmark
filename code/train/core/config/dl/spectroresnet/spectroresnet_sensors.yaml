@@ -49,10 +49,11 @@ param_model:
   n_hop: 16
   fmin: 0.0
   fmax: 25
+  mlp_size: 351
   mid_hidden: 64
   gru_hidden: 64
   UseDerivative: true
-  verbose: false
+  model_verbose: false
 logger:
   param_ckpt:
     monitor: ${objective.type}

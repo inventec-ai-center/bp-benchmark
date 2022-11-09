@@ -28,10 +28,11 @@ class SpectroResnet(Regressor):
                                              n_hop=param_model.n_hop,
                                              fmin=param_model.fmin,
                                              fmax=param_model.fmax,
+                                             mlp_size=param_model.mlp_size,
                                              mid_hidden=param_model.mid_hidden,
                                              gru_hidden=param_model.gru_hidden,
                                              UseDerivative=param_model.UseDerivative,
-                                             verbose=param_model.verbose)
+                                             verbose=param_model.model_verbose)
                                              
     def _shared_step(self, batch):
         x_ppg, y, x_abp, peakmask, vlymask = batch
@@ -84,9 +85,9 @@ class single_channel_resnet(nn.Module):
 
         self.pool_size = pool_size
         self.pool_stride_size = pool_stride_size
-        self.bn1 = self.bn1 = nn.BatchNorm1d(in_channel)
+        self.bn1 = nn.BatchNorm1d(in_channel)
 
-        self.layers = []
+        self.layers = nn.ModuleList()
         in_planes, planes = in_channel, num_filters
         for i in range(num_res_blocks - 1):
             self.layers.append(self._make_block(i, in_planes, planes, cnn_per_res, kernel_sizes))
@@ -117,10 +118,10 @@ class single_channel_resnet(nn.Module):
         out_block.append(nn.ReLU())
         out_block.append(nn.AvgPool1d(kernel_size=self.pool_size, stride=self.pool_stride_size))
         
-        return nn.Sequential(*layers), nn.Sequential(*residue_block), nn.Sequential(*out_block)
+        return nn.ModuleList([nn.Sequential(*layers), nn.Sequential(*residue_block), nn.Sequential(*out_block)])
     
     def forward(self, x):
-        input = deepcopy(x)
+        input = x.clone()
         residue = x
         x = self.bn1(x)
         for i, (layer, residue_layer, out_layer) in enumerate(self.layers):
@@ -133,7 +134,7 @@ class single_channel_resnet(nn.Module):
         return input, x
 
 class mid_spectrogram_LSTM_layer(nn.Module):
-    def __init__(self, n_dft=64, n_hop=64, fmin=0.0, fmax=25, feat_dim=32, verbose=False):
+    def __init__(self, n_dft=64, n_hop=64, fmin=0.0, fmax=25, feat_dim=32, mlp_size=351, verbose=False):
         super(mid_spectrogram_LSTM_layer, self).__init__()
         self.verbose = verbose
 
@@ -142,6 +143,8 @@ class mid_spectrogram_LSTM_layer(nn.Module):
         self.feat_dim = feat_dim
         self.stft = Spectrogram(n_fft=n_dft, hop_length=n_hop, center=False)  # return power instead of complex, don't need extra magnitude function
         
+        self.mlp_size = mlp_size
+        self.mlp = nn.Linear(mlp_size,self.feat_dim) # miss the kernel_regularizer, l2_lambda is not used
         self.relu = nn.ReLU()
         self.bn = nn.BatchNorm1d(feat_dim)
     
@@ -152,31 +155,30 @@ class mid_spectrogram_LSTM_layer(nn.Module):
         if self.verbose: print(x.shape)
         x = x.reshape(x.shape[0], -1)
         if self.verbose: print(x.shape)
-
-        self.mlp = nn.Linear(x.shape[-1],self.feat_dim) # miss the kernel_regularizer, l2_lambda is not used
-
+        #print('mlp_size_shape',x.shape[-1])
+        #print('mlp_size',self.mlp_size)
         x = self.bn(self.relu(self.mlp(x)))
         return x
 
 class raw_signals_deep_ResNet(nn.Module):
     def __init__(self, in_channel=1, num_filters=32, num_res_blocks=4, cnn_per_res=3,
                kernel_sizes=[8, 5, 3], max_filters=64, pool_size=3, pool_stride_size=2,
-               n_dft=64, n_hop=64, fmin=0.0, fmax=25, mid_hidden=64, gru_hidden=64, UseDerivative=False, verbose=False):
+               n_dft=64, n_hop=64, fmin=0.0, fmax=25, mlp_size=351, mid_hidden=64, gru_hidden=64, UseDerivative=False, verbose=False):
         super(raw_signals_deep_ResNet, self).__init__()
         self.verbose = verbose
 
         self.UseDerivative = UseDerivative
         n_channel = 3 if self.UseDerivative else 1
 
-        self.layers = []
-        self.mid_spec_layers = []
+        self.layers = nn.ModuleList()
+        self.mid_spec_layers = nn.ModuleList()
         for _ in range(n_channel):
             self.layers.append(single_channel_resnet(in_channel=in_channel, num_filters=num_filters, 
                                   num_res_blocks=num_res_blocks, cnn_per_res=cnn_per_res, 
                                   kernel_sizes=kernel_sizes, max_filters=max_filters, 
                                   pool_size=pool_size, pool_stride_size=pool_stride_size, verbose=self.verbose))
             self.mid_spec_layers.append(mid_spectrogram_LSTM_layer(n_dft=n_dft, n_hop=n_hop, fmin=fmin, 
-                                          fmax=fmax, feat_dim=mid_hidden, verbose=self.verbose))
+                                          fmax=fmax, feat_dim=mid_hidden, mlp_size=mlp_size, verbose=self.verbose))
         
         self.resnet_out_channel = num_filters * (2 ** (num_res_blocks - 1))
         self.resnet_out_channel = self.resnet_out_channel if self.resnet_out_channel <= max_filters else max_filters
@@ -206,9 +208,10 @@ class raw_signals_deep_ResNet(nn.Module):
     def forward(self, x):
         x_all = [x]
         if self.UseDerivative:
-            x_dt1 = torch.diff(x)
-            x_dt2 = torch.diff(x_dt1)
+            x_dt1 = torch.diff(x, append=x[:,:,-1:])
+            x_dt2 = torch.diff(x_dt1, append=x_dt1[:,:,-1:])
             x_all = [x, x_dt1, x_dt2]
+        #print(x.shape, x_dt1.shape, x_dt2.shape)
 
         inputs = []
         channel_outputs = []

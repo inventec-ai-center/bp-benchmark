@@ -283,6 +283,12 @@ def cal_statistics(config, all_df):
             config.param_loader[f'abp_std'] = float(np.vstack(all_df['abp_signal']).std())
             config.param_loader[f'abp_min'] = float(np.vstack(all_df['abp_signal']).min())
             config.param_loader[f'abp_max'] = float(np.vstack(all_df['abp_signal']).max())
+        else: #dummy stats
+            config.param_loader[f'abp_mean'] = 0.0
+            config.param_loader[f'abp_std'] = 1.0
+            config.param_loader[f'abp_min'] = 0.0
+            config.param_loader[f'abp_max'] = 1.0
+            
             
     return config
 
