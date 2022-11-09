@@ -105,6 +105,8 @@ class SolverS2l(Solver):
         
         #--- Nested cv 
         self.config = cal_statistics(self.config, all_split_df)
+        
+        print(self.config)
         for foldIdx, (folds_train, folds_val, folds_test) in enumerate(get_nested_fold_idx(self.config.exp.N_fold)):
             if (self.config.exp.cv=='HOO') and (foldIdx==1):  break
             train_df = pd.concat(np.array(all_split_df)[folds_train])

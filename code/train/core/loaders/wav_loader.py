@@ -101,6 +101,7 @@ class sensorsLoader():
         all_sbp = []
         all_dbp = []
 
+        dummy = False
         # check if abp signal exist -> if not insert dummy
         if not 'abp_signal' in list(self.data_df.columns):
             self.data_df['abp_signal'] = self.data_df['signal']
