@@ -54,7 +54,7 @@ param_model:
   mlp_size: 144
   mid_hidden: 64
   gru_hidden: 64
-  UseDerivative: true
+  UseDerivative: false
   model_verbose: false
 logger:
   param_ckpt:

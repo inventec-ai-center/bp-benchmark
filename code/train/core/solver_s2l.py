@@ -37,6 +37,8 @@ class SolverS2l(Solver):
                 model = Resnet1d(self.config.param_model, random_state=self.config.exp.random_state)
             elif self.config.exp.model_type == "spectroresnet":
                 model = SpectroResnet(self.config.param_model, random_state=self.config.exp.random_state)
+            elif self.config.exp.model_type == "mlpbp":
+                model = MLPBP(self.config.param_model, random_state=self.config.exp.random_state)
             else:
                 model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
             return model
@@ -45,6 +47,8 @@ class SolverS2l(Solver):
                 model = Resnet1d.load_from_checkpoint(ckpt_path_abs)
             elif self.config.exp.model_type == "spectroresnet":
                 model = SpectroResnet.load_from_checkpoint(ckpt_path_abs)
+            elif self.config.exp.model_type == "mlpbp":
+                model = MLPBP.load_from_checkpoint(ckpt_path_abs)
             else:
                 model = eval(self.config.exp.model_type).load_from_checkpoint(ckpt_path_abs)
             return model
@@ -72,11 +76,11 @@ class SolverS2l(Solver):
 
             # error
             err_dict[tar_acrny] = pred_bp - true_bp
-            fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
-            fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
             fold_errors[f"{mode}_{tar_acrny}_pred"].append(pred_bp)
             fold_errors[f"{mode}_{tar_acrny}_label"].append(true_bp)
             fold_errors[f"{mode}_{tar_acrny}_naive"].append([naive_bp]*len(pred_bp))
+        fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
+        fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
         
         metrics = cal_metric(err_dict, mode=mode)    
         
@@ -207,7 +211,10 @@ class SolverS2l(Solver):
             dm.setup_kfold(train_df, val_df, test_df)
 
             #--- load trained model
-            trainer = MyTrainer()
+            if 'param_trainer' in self.config.keys():
+                trainer = MyTrainer(**dict(self.config.param_trainer))
+            else:
+                trainer = MyTrainer()
             ckpt_apth_abs = glob(f'{self.config.param_test.model_path}{foldIdx}' + '*.ckpt')[0]
             model = self._get_model(ckpt_path_abs=ckpt_apth_abs)
             model.eval()

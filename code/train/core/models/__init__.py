@@ -8,3 +8,5 @@ from .ada import adaModel
 from .mlp import mlpModel
 from .ppgiabp import PPGIABP
 from .spectroresnet import SpectroResnet
+from .mlpbp import MLPBP
+from .vnet1d import Vnet1d

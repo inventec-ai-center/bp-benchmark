@@ -89,7 +89,7 @@ class single_channel_resnet(nn.Module):
 
         self.layers = nn.ModuleList()
         in_planes, planes = in_channel, num_filters
-        for i in range(num_res_blocks - 1):
+        for i in range(num_res_blocks):
             self.layers.append(self._make_block(i, in_planes, planes, cnn_per_res, kernel_sizes))
             in_planes = planes
             planes *= 2

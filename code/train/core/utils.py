@@ -11,6 +11,7 @@ from shutil import rmtree
 from pyampd.ampd import find_peaks
 from mlflow.tracking import MlflowClient
 from mlflow.utils.autologging_utils.safety import try_mlflow_log
+import scipy
     
 def str2bool(v):
     if isinstance(v, bool): return v
@@ -172,8 +173,15 @@ def loc_dez(x,config, type='SP'):
 #%% Compute bps
 def compute_sp_dp(sig, fs=125, pk_th=0.6):
     sig = sig.astype(np.float64)
-    peaks = find_peaks(sig,fs)
-    valleys = find_peaks(-sig,fs)
+    try:
+        peaks = find_peaks(sig,fs)
+    except: # if prediction is too jitering.
+        peaks = find_peaks(butter_lowpass_filter(sig, 8, fs, 5),fs)
+        
+    try:
+        valleys = find_peaks(-sig,fs)
+    except: # if prediction is too jitering.
+        valleys = find_peaks(-butter_lowpass_filter(sig, 8, fs, 5),fs)
     
     sp, dp = -1 , -1
     flag1 = False
@@ -240,6 +248,33 @@ def compute_sp_dp(sig, fs=125, pk_th=0.6):
         
         
     return np.median(sig[new_peaks]), np.median(sig[valleys]), flag1, flag2, new_peaks, valleys
+
+def butter_lowpass_filter(data, lowcut, fs, order):
+    """ Butterworth band-pass filter
+    Parameters
+    ----------
+    data : array
+        Signal to be filtered.
+    lowcut : float
+        Frequency lowcut for the filter. 
+    highcut : float}
+        Frequency highcut for the filter.
+    fs : float
+        Sampling rate.
+    order: int
+        Filter's order.
+
+    Returns
+    -------
+    array
+        Signal filtered with butterworth algorithm.
+    """  
+    nyq = fs * 0.5  # https://en.wikipedia.org/wiki/Nyquist_frequency
+    lowcut = lowcut / nyq  # Normalize
+    #highcut = highcut / nyq
+    # Numerator (b) and denominator (a) polynomials of the IIR filter
+    b, a = scipy.signal.butter(order, lowcut, btype='low', analog=False)
+    return scipy.signal.filtfilt(b, a, data)
     
 def get_bp_pk_vly_mask(data):
     try:
