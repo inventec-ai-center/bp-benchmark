@@ -49,6 +49,8 @@ class Solver:
                 model = Unet1d(self.config.param_model, random_state=self.config.exp.random_state)
             elif self.config.exp.model_type == "ppgiabp":
                 model = PPGIABP(self.config.param_model, random_state=self.config.exp.random_state)
+            elif self.config.exp.model_type == "vnet":
+                model = Vnet1d(self.config.param_model, random_state=self.config.exp.random_state)
             else:
                 model = eval(self.config.exp.model_type)(self.config.param_model, random_state=self.config.exp.random_state)
             return model
@@ -57,6 +59,8 @@ class Solver:
                 model = Unet1d.load_from_checkpoint(ckpt_path_abs)
             elif self.config.exp.model_type == "ppgiabp":
                 model = PPGIABP.load_from_checkpoint(ckpt_path_abs)
+            elif self.config.exp.model_type == "vnet":
+                model = Vnet1d.load_from_checkpoint(ckpt_path_abs)
             else:
                 model = eval(self.config.exp.model_type).load_from_checkpoint(ckpt_path_abs)
             return model
@@ -73,7 +77,7 @@ class Solver:
         true_abps = bp_denorm(outputs["true_abp"].squeeze(1).numpy(), self.config, 'abp')
         pred_abps = bp_denorm(outputs["pred_abp"].squeeze(1).numpy(), self.config, 'abp')
         true_bps = outputs["true_bp"].numpy()
-        if self.config.exp.model_type == "unet1d":
+        if self.config.exp.model_type in ["unet1d","vnet"]:
             pred_bps = np.array([compute_sp_dp(p) for p in pred_abps])
         elif self.config.exp.model_type == "ppgiabp":
             mask = outputs['y_mask']==1
@@ -91,12 +95,12 @@ class Solver:
 
             # error
             err_dict[tar_acrny] = pred_bp - true_bp
-            fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
-            fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
             fold_errors[f"{mode}_{tar_acrny}_pred"].append(pred_bp)
             fold_errors[f"{mode}_{tar_acrny}_label"].append(true_bp)
             fold_errors[f"{mode}_{tar_acrny}_naive"].append([naive_bp]*len(pred_bp))
         
+        fold_errors[f"{mode}_subject_id"].append(loader.dataset.subjects)
+        fold_errors[f"{mode}_record_id"].append(loader.dataset.records)
         fold_errors[f"{mode}_abp_true"].append(true_abps)
         fold_errors[f"{mode}_abp_pred"].append(pred_abps)
         
@@ -231,7 +235,10 @@ class Solver:
             dm.setup_kfold(train_df, val_df, test_df)
 
             #--- load trained model
-            trainer = MyTrainer()
+            if 'param_trainer' in self.config.keys():
+                trainer = MyTrainer(**dict(self.config.param_trainer))
+            else:
+                trainer = MyTrainer()
             ckpt_apth_abs = glob(f'{self.config.param_test.model_path}{foldIdx}' + '*.ckpt')[0]
             model = self._get_model(ckpt_path_abs=ckpt_apth_abs)
             model.eval()

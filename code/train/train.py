@@ -44,9 +44,9 @@ def main(args):
     config = OmegaConf.load(args.config_file)
     
     #--- get the solver
-    if config.exp.model_type in ['unet1d', 'ppgiabp']:
+    if config.exp.model_type in ['unet1d', 'ppgiabp', 'vnet']:
         solver = solver_s2s(config)
-    elif config.exp.model_type in ['resnet1d','spectroresnet']:
+    elif config.exp.model_type in ['resnet1d','spectroresnet','mlpbp']:
         torch.use_deterministic_algorithms(True)
         solver = solver_s2l(config)
     else:
