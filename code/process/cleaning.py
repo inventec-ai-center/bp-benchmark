@@ -53,7 +53,7 @@ def _compute_naive_BP(df):
     df['DP'] = df.abp_signal.map(np.min)
     return df
 
-def _compute_quality_idx(df, isABP):
+def _compute_quality_idx(df, args, isABP):
     """ Compute the statistics to do the distorted signal removal 
         isABP parameter allows to compute metrics on ABP (if True) or PPG.
     """
@@ -342,7 +342,7 @@ def main(args):
     
     #---------- BPM limitation ----------#
     _print_step("BPM limitation (ABP)",cl_log)
-    df = _compute_quality_idx(df, isABP=True)
+    df = _compute_quality_idx(df, args, isABP=True)
     df = _limitation_bpm(df, args, cl_log, isABP=True)
     _print_n_samples(df, cl_log)
     
@@ -363,7 +363,7 @@ def main(args):
     
     #---------- BPM limitation (PPG) ----------#
     _print_step("BPM limitation (PPG)",cl_log)
-    df = _compute_quality_idx(df, isABP=False)
+    df = _compute_quality_idx(df, args, isABP=False)
     df = _limitation_bpm(df, args, cl_log, isABP=False)
     _print_n_samples(df, cl_log)
     
@@ -384,7 +384,7 @@ def main(args):
     #---------- BPM limitation (PPG) ----------#
     _print_step("BPM limitation (PPG)",cl_log)
     df = _extract_ppg_cycles(df, args, cl_log)
-    df = _compute_quality_idx(df, isABP=False)
+    df = _compute_quality_idx(df, args, isABP=False)
     df = _limitation_bpm(df, args, cl_log, isABP=False)
     _print_n_samples(df, cl_log)
     
