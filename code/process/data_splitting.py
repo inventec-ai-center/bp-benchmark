@@ -122,6 +122,8 @@ def data_splitting(config):
     for i in range(len(all_split_df)): ### remove 'label_class' column
         if 'label_class' in all_split_df[i].columns:
             all_split_df[i].drop(columns=['label_class'], inplace=True)
+        if 'agg_ohe' in all_split_df[i].columns:
+            all_split_df[i].drop(columns=['agg_ohe'], inplace=True)
 
     joblib.dump(all_split_df, config.path.split_df_path)
 
