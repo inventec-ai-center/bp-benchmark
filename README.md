@@ -1,4 +1,4 @@
-# BP-Algorithm
+# A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram
 
 ## Setup environment
 ``` bash
@@ -272,4 +272,18 @@ ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to w
 
 # Step 4: now you can browse mlflow server in your browser
 # open a new tab in your browser and type http://localhost:9181/
+```
+
+# Copyright Information
+
+This project is under the terms of [the MIT license](https://opensource.org/licenses/mit-license.php). It is only for research or education purposes, and not freely available for commercial use or redistribution. This intellectual property belongs to the Inventec Corporation. Licensing is possible if you want to use the code for commercial use. For scientific use, please reference this repository together with the relevant publication.
+
+```
+@article{BPbenchmark2023,
+    author   = {González, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
+    title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
+    journal  = {Scientific Data)},
+    year     = {2023},
+    numpages = {19}
+}
 ```
