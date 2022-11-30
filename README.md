@@ -1,4 +1,10 @@
-# A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram
+A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram <br />
+<sub>Sergio González, Wan-Ting Hsieh, and Trista Pei-Chun Chen</sub>
+------------
+
+Blood Pressure (BP) is an important cardiovascular health indicator. BP is usually monitored noninvasively with a cuff-based device, which can be bulky and inconvenient. Thus, continuous and portable BP monitoring devices, such as those based on a photoplethysmography (PPG) waveform, are desirable. In particular, Machine Learning (ML) based BP estimation approaches have gained considerable attention as they have the potential to estimate intermittent or continuous BP with only a single PPG measurement. Over the last few years, many ML-based BP estimation approaches have been proposed with no agreement on their modeling methodology. To ease the model comparison, we designed a benchmark with four open datasets with shared preprocessing, the right validation strategy avoiding information shift and leak, and standard evaluation metrics. We also adapted Mean Absolute Scaled Error (MASE) to improve the interpretability of model evaluation, especially across different BP datasets. The proposed benchmark comes with open datasets and codes. We showcase its effectiveness by comparing 11 ML-based approaches of three different categories.
+
+# Installation
 
 ## Setup environment
 ``` bash
@@ -83,9 +89,6 @@ wget https://archive.ics.uci.edu/ml/machine-learning-databases/00340/data.zip
 # Unzip the data
 unzip data.zip 
 
-# OPTIONAL: remove unnecessary files
-rm -r __MACOSX data.zip
-
 ```
 - BCG dataset has to be downloaded manually from [IEEE*DataPort*'s site](https://ieee-dataport.org/open-access/bed-based-ballistocardiography-dataset) with an IEEE account. 
 ```bash
@@ -125,6 +128,8 @@ mv 'Data File'/* .
 rm -r 'Data File' data.zip 
 ```
 
+# How To Use   
+ 
 ## Processing
 
 This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction and data splitting for model validation.
