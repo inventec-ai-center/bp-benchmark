@@ -51,7 +51,7 @@ param_model:
   n_hop: 16
   fmin: 0.0
   fmax: 25
-  mlp_size: 144
+  mlp_size: 144 
   mid_hidden: 64
   gru_hidden: 64
   UseDerivative: false

@@ -31,20 +31,20 @@ param_early_stop:
   verbose: true
   mode: ${objective.mode}
 param_model:
-  N_epoch: 256
-  batch_size: 256
-  in_channel: 1
-  base_filters: 64
-  first_kernel_size: 9
-  kernel_size: 3
-  stride: 4
-  groups: 2
-  n_block: 4
-  output_size: 2
-  lr: 0.001
-  sample_step: 1
-  is_se: true
-  se_ch_low: 4
+    N_epoch: 256
+    batch_size: 256
+    in_channel: 1
+    base_filters: 32
+    first_kernel_size: 9
+    kernel_size: 3
+    stride: 4
+    groups: 2
+    n_block: 10
+    output_size: 2
+    lr: 0.001
+    sample_step: 1
+    is_se: true
+    se_ch_low: 4
 logger:
   param_ckpt:
     monitor: ${objective.type}
