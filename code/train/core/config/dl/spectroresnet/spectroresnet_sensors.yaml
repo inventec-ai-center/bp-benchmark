@@ -45,11 +45,11 @@ param_model:
   max_filters: 64
   pool_size: 3
   pool_stride_size: 2
-  n_dft: 16
-  n_hop: 16
+  n_dft: 64
+  n_hop: 64
   fmin: 0.0
   fmax: 25
-  mlp_size: 351
+  mlp_size: 297 
   mid_hidden: 64
   gru_hidden: 64
   UseDerivative: false
