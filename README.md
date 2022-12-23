@@ -281,7 +281,7 @@ ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to w
 
 # Copyright Information
 
-This project is under the terms of [the MIT license](https://opensource.org/licenses/mit-license.php). It is only for research or education purposes, and not freely available for commercial use or redistribution. This intellectual property belongs to the Inventec Corporation. Licensing is possible if you want to use the code for commercial use. For scientific use, please reference this repository together with the relevant publication.
+This project is under the terms of [the MIT license](https://opensource.org/licenses/mit-license.php). Please reference this repository together with the relevant publication when using the code.
 
 ```
 @article{BPbenchmark2023,
