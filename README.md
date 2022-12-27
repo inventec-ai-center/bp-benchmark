@@ -281,11 +281,12 @@ ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to w
 
 # Copyright Information
 
-This project is under the terms of [the MIT license](https://opensource.org/licenses/mit-license.php). Please reference this repository together with the relevant publication when using the code.
+This project is under the terms of the [MIT license](https://opensource.org/licenses/mit-license.php). Please reference this repository together with the relevant publication when using the code.
 
 ```
 @article{BPbenchmark2023,
     author   = {González, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
+    note = {(Inventec Corporation work)},
     title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
     journal  = {Scientific Data},
     year     = {2023},
