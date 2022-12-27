@@ -286,7 +286,7 @@ This project is under the terms of the [MIT license](https://opensource.org/lice
 ```
 @article{BPbenchmark2023,
     author   = {González, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
-    note = {(Inventec Corporation work)},
+    note     = {(Inventec Corporation work)},
     title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
     journal  = {Scientific Data},
     year     = {2023},
