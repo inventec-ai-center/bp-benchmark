@@ -1,0 +1,58 @@
+# --------------------------------------------------------------------------------------------------
+# exp settings
+exp:
+    fs: 125
+    N_fold: 5
+    random_state: 100
+    model_type: resnet1d
+    data_name: sensors
+    exp_name: ${exp.data_name}-${exp.model_type}
+    subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
+    loader: waveform
+    cv: cv
+# --------------------------------------------------------------------------------------------------
+# data laading / features
+param_loader:
+    ppg_norm: loc_z # glob_mm, glob_z, loc_z, loc_mm
+    bp_norm: glob_mm # glob_mm, glob_z, loc_z, loc_mm
+
+# --------------------------------------------------------------------------------------------------
+# param for test
+param_test:
+    model_path: ../../models/model-${exp.model_type}/${exp.exp_name}-fold
+    # - ../mlruns/7/d1e10280a5d441aca0225d5b5cbe0d67/artifacts/restored_model_checkpoint/epoch=51-val_mse=0.027.ckpt
+    # - ../mlruns/7/084f858cf54f436fbc152672b0435a81/artifacts/restored_model_checkpoint/epoch=15-val_mse=0.026.ckpt
+    # - ../mlruns/7/68ba182f7e094e9ea4c6fd4a0671a167/artifacts/restored_model_checkpoint/epoch=39-val_mse=0.027.ckpt
+    # - ../mlruns/7/73ff0d64185a4a819d78c86d0421afc9/artifacts/restored_model_checkpoint/epoch=49-val_mse=0.022.ckpt
+    # - ../mlruns/7/5a288ab9805f4083ba56e17a82f37c05/artifacts/restored_model_checkpoint/epoch=35-val_mse=0.024.ckpt
+    save_path: ../../prediction/${exp.data_name}_dataset/${exp.exp_name}.pkl
+
+
+param_model:
+  N_epoch: 256    
+  batch_size: 256
+  in_channel: 1
+  base_filters: 64
+  first_kernel_size: 9
+  kernel_size: 3
+  stride: 4
+  groups: 2
+  n_block: 4
+  output_size: 2
+  lr: 0.001
+  sample_step: 1
+  is_se: true
+
+#   N_epoch: 256
+#   batch_size: 256
+#   in_channel: 1
+#   base_filters: 64
+#   first_kernel_size: 9
+#   kernel_size: 5
+#   stride: 4
+#   groups: 2
+#   n_block: 4
+#   output_size: 2
+#   lr: 0.001
+#   sample_step: 1
+#   is_se: true

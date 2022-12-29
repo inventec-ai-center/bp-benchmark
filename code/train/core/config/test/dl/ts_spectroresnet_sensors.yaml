@@ -1,0 +1,42 @@
+exp:
+  fs: 125
+  N_fold: 5
+  random_state: 100
+  model_type: spectroresnet
+  data_name: sensors
+  exp_name: ${exp.data_name}-${exp.model_type}
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
+  loader: waveform
+  cv: cv
+param_loader:
+  ppg_norm: loc_z
+  bp_norm: glob_mm
+param_test:
+  model_path: ../../models/model-${exp.model_type}/${exp.exp_name}-fold
+  save_path: ../../prediction/${exp.data_name}_dataset/${exp.exp_name}.pkl
+param_trainer:
+  gpus: '0'
+param_model:
+  N_epoch: 256
+  batch_size: 256
+  lr: 0.001
+  in_channel: 1
+  num_filters: 32
+  num_res_blocks: 4
+  cnn_per_res: 3
+  kernel_sizes:
+  - 8
+  - 5
+  - 3
+  max_filters: 64
+  pool_size: 3
+  pool_stride_size: 2
+  n_dft: 16
+  n_hop: 16
+  fmin: 0.0
+  fmax: 25
+  mlp_size: 351
+  mid_hidden: 64
+  gru_hidden: 64
+  UseDerivative: false
+  model_verbose: false

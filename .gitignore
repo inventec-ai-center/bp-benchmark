@@ -1,0 +1,24 @@
+# vs code
+.vscode
+
+# python cache 
+__pycache__
+
+# training logs
+*.log
+lightning_logs/
+mlruns/
+checkpoints/
+lightning_logs/
+multirun/
+
+# model
+model-*
+
+# output
+*.csv
+
+# DS_Store
+.DS_Store
+
+.ipynb_checkpoints

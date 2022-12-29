@@ -1,0 +1,42 @@
+
+# Paths
+path:
+    data: "../../datasets/segmented/PPGBP.pkl" # Path to file with the segmented data 
+    log: "core/logs/PPGBP_log.txt" # Logging files to save a summary of the process 
+    save_name: "../../datasets/preprocessed/PPGBP.pkl" # File name to save the signal data
+    save_name_feats: "../../datasets/preprocessed/PPGBP_feats.pkl" # File name to save the features data
+    feats_template: "core/config/preprocessing/columns_template.csv" # Columns template for the 
+
+# frequency sampling rate of the signals
+fs: 125
+
+# Filter by abnormal ABP/BP values. Set the valid ranges of BP
+bp_filter:
+    up_sbp: 220 # Max value for SBP
+    lo_dbp: 30 # Min value for DBP
+    lo_diff: 10 # Min value for SBP-DBP
+
+# Limitation in terms of BPM at rest 
+cycle_len:
+    lo_bpm: 35 # minimum BPM 
+    up_bpm: 140 # maximum BPM
+
+# Parameters for butterworth band-pass filter (ONLY FOR features extraction).
+ppg_filter:
+    enable: True # enable the filtering
+    lowcut: .5 
+    highcut: 8
+    order:  1
+
+# Enable to remove the first and last peaks/valleys in cycle identification 
+remove_start_end: False # PPGBP segments are too small to remove
+
+# SQI skewness removal
+lo_sqi: 0 # filter bellow this number 
+
+# Parameters for parallelization
+parallel:
+    n_jobs: -1
+    verbose: 0
+
+

@@ -1,0 +1,20 @@
+
+# Path to folder of PPGBP raw data
+# The expected files in the folder are the original dataset files:
+# "PPG-BP-dataset.xlsx" file with the demographic information of the subjects.
+# "0_subject" directory with three text file per patient with vital signals
+data: "../../datasets/raw/PPGBP/"
+
+# File name to save the data
+save_name: "../../datasets/segmented/PPGBP.pkl"
+
+# File name with the order of the files to read.
+# If not exist, the order of raw data directory will be used.
+order_file: "./core/config/segmentation/ppgbp_order.csv"
+
+#Original frequency sampling rate
+fs: 1000
+
+#Resampling frequency rate (-1 to keep the original fs)
+resampling: 125
+

@@ -1,0 +1,117 @@
+# --------------------------------------------------------------------------------------------------
+defaults:
+  - override hydra/sweeper: optuna
+  # - override hydra/sweeper/sampler: tpe
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+
+# --------------------------------------------------------------------------------------------------
+hydra:
+  sweeper:
+    sampler:
+      seed: 123
+      _target_: optuna.samplers.TPESampler
+      consider_prior: true
+      prior_weight: 1.0
+      consider_magic_clip: true
+      consider_endpoints: false
+      n_startup_trials: 10
+      n_ei_candidates: 24
+      multivariate: false
+      warn_independent_sampling: true
+    direction: minimize
+    study_name: ${exp.exp_name}
+    storage: null
+    n_trials: 50
+    n_jobs: 1
+
+    search_space:
+      param_model.base_filters: 
+        type: categorical
+        choices: [32,64,128,256]
+      param_model.first_kernel_size:
+        type: categorical
+        choices: [5,9,11,15]
+      param_model.kernel_size:
+        type: categorical
+        choices: [3,5]
+      param_model.n_block:
+        type: categorical
+        choices: [4,8,10]
+
+      
+# Paths
+path:
+    model_directory: "./model-{${exp.model_type}}"
+    mlflow_dir: "./mlruns" # relative path to the project root
+
+# --------------------------------------------------------------------------------------------------
+# exp settings
+exp:
+    fs: 125
+    N_fold: 5
+    random_state: 100
+    model_type: "resnet1d" 
+    data_name: bcg
+    exp_name: ${exp.data_name}-${exp.model_type}
+    subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
+    loader: 'waveform'
+    cv: 'cv'
+# --------------------------------------------------------------------------------------------------
+# features & labels
+
+# data laading / features
+param_loader:
+    phase_match: True
+    filtered: True
+    feat: [None] #["vpg"] 
+    ppg_norm: "loc_z" # glob_mm, glob_z, loc_z, loc_mm
+    bp_norm: glob_mm # glob_mm, glob_z, loc_z, loc_mm
+    
+# --------------------------------------------------------------------------------------------------
+# trainer param
+objective:
+  type: "val_mse"
+  mode: "min"
+param_trainer:
+    max_epochs: 100
+    check_val_every_n_epoch: 2
+    progress_bar_refresh_rate: 5
+    gpus: "0"
+    auto_lr_find: True
+    auto_scale_batch_size: "binsearch"
+param_early_stop:
+    monitor: ${objective.type}
+    min_delta: 0.00
+    patience: 10
+    verbose: True
+    mode: ${objective.mode}
+
+
+# --------------------------------------------------------------------------------------------------
+#  model param
+param_model:
+    N_epoch: 256
+    batch_size: 256
+    in_channel: 1
+    base_filters: 32
+    first_kernel_size: 9
+    kernel_size: 3
+    stride: 4
+    groups: 2
+    n_block: 10
+    output_size: 2
+    lr: 0.001
+    sample_step: 1
+    is_se: true
+    se_ch_low: 4
+
+# --------------------------------------------------------------------------------------------------
+logger:
+    param_ckpt:
+        # dirpath: ${model_directory}
+        monitor: ${objective.type}
+        filename: "{epoch:02d}-{${objective.type}:.3f}"
+        save_top_k: 1
+        mode: ${objective.mode}
+    log_lightning: False

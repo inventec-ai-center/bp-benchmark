@@ -1,92 +1,293 @@
-# bp-benchmark
+A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram <br />
+<sub>Sergio González, Wan-Ting Hsieh, and Trista Pei-Chun Chen</sub>
+------------
 
+Blood Pressure (BP) is an important cardiovascular health indicator. BP is usually monitored noninvasively with a cuff-based device, which can be bulky and inconvenient. Thus, continuous and portable BP monitoring devices, such as those based on a photoplethysmography (PPG) waveform, are desirable. In particular, Machine Learning (ML) based BP estimation approaches have gained considerable attention as they have the potential to estimate intermittent or continuous BP with only a single PPG measurement. Over the last few years, many ML-based BP estimation approaches have been proposed with no agreement on their modeling methodology. To ease the model comparison, we designed a benchmark with four open datasets with shared preprocessing, the right validation strategy avoiding information shift and leak, and standard evaluation metrics. We also adapted Mean Absolute Scaled Error (MASE) to improve the interpretability of model evaluation, especially across different BP datasets. The proposed benchmark comes with open datasets and codes. We showcase its effectiveness by comparing 11 ML-based approaches of three different categories.
 
+# Installation
 
-## Getting started
+## Setup environment
+``` bash
+#-- Create folder
+mkdir bp_benchmark
+cd bp_benchmark
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+#-- Download data 
+mkdir -p ./datasets/splitted
+cd ./datasets/splitted
+# download the datasets from Figshare into ./datasets/splitted
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+#-- Download trained models 
+cd ../..
+mkdir ./models
+cd ./models
+# download the models from Figshare into ./ models/
 
-## Add your files
+#-- Clone project
+cd ../.. # back to /bp-benchmark
+git clone https://github.com/inventec-ai-center/bp-benchmark.git
+cd bp-algorithm
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+#-- Build docker image
+docker build -t bpimage .
+docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-algorithm/:/bp_benchmark -v ~/bp_benchmark/datasets/:/bp_benchmark/datasets -v ~/bp_benchmark/models/:/bp_benchmark/models bpimage bash
+
+#-- Quick test the environment
+cd code/train
+python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
+```
+
+## Datasets
+
+Before running the training pipeline, the user could directly download the preprocessed datasets (**recommended**), or download raw datasets and process them.
+
+#### Preprocessed datasets
+
+The preprocessed datasets might be found in Figshare. They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
+
+```bash
+mkdir /bp_benchmark/datasets/splitted/
+cd /bp_benchmark/datasets/splitted/
+
+# Download the dataset under /bp_benchmark/datasets/splitted/
+wget -O data.zip <link-to-figshare>
+# Unzip the data
+unzip data.zip 
+    
+# OPTIONAL: remove unnecessary files
+rm -r data.zip 
+```
+
+#### Raw datasets
+
+The raw datasets should be located under the directory `/bp_benchmark/datasets/raw/` to proceed with the processing stage.
+
+- sensors dataset might be found in [Zenodo's website](https://zenodo.org/record/4598938):
+``` bash
+mkdir /bp_benchmark/datasets/raw/sensors
+cd /bp_benchmark/datasets/raw/sensors
+
+# Download sensors dataset under datasets/raw/sensors
+wget https://zenodo.org/record/4598938/files/ABP_PPG.zip
+# Unzip the data
+unzip ABP_PPG.zip
+# move files to desired path
+mv ABP_PPG/* . 
+
+# OPTIONAL: remove unnecessary files
+rm -r ABP_PPG ABP_PPG.zip 'completed (copy).mat' completed.mat 
+```
+- UCI dataset might be downloaded from [UCI repository](https://archive.ics.uci.edu/ml/datasets/Cuff-Less+Blood+Pressure+Estimation#).
+```bash
+mkdir /bp_benchmark/datasets/raw/UCI
+cd /bp_benchmark/datasets/raw/UCI
+
+# Download UCI dataset under datasets/raw/UCI
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/00340/data.zip
+# Unzip the data
+unzip data.zip 
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/inventecaicenter/bp-benchmark.git
-git branch -M main
-git push -uf origin main
+- BCG dataset has to be downloaded manually from [IEEE*DataPort*'s site](https://ieee-dataport.org/open-access/bed-based-ballistocardiography-dataset) with an IEEE account. 
+```bash
+mkdir /bp_benchmark/datasets/raw/BCG
+cd /bp_benchmark/datasets/raw/BCG
+
+# > Manually download the data from IEEEDataPort and 
+# > Locate 'Data Files.zip' under /bp_benchmark/datasets/raw/BCG
+
+# Unzip the data
+unzip 'Data Files.zip' 
+# move files to desired path
+mv 'Data Files'/* .
+
+# OPTIONAL: remove unnecessary files
+rm -r 'Data Files'
+```
+Before proceeding with the processing stage of BCG dataset, the Matlab's script `code/process/core/bcg_mat2csv.m` must be run with the raw data path as parameter. 
+```bash
+cd /bp_benchmark/code/process/core/bcg_mat2csv.m
+matlab -r "bcg_mat2csv('../../../datasets/raw/BCG')"
 ```
 
-## Integrate with your tools
+- PPGBP dataset might be found in [Figshare's site](https://figshare.com/articles/dataset/PPG-BP_Database_zip/5459299).
+```bash
+mkdir /bp_benchmark/datasets/raw/PPGBP
+cd /bp_benchmark/datasets/raw/PPGBP
 
-- [ ] [Set up project integrations](https://gitlab.com/inventecaicenter/bp-benchmark/-/settings/integrations)
+# Download PPGBP dataset under datasets/raw/PPGBP
+wget -O data.zip https://figshare.com/ndownloader/files/9441097
+# Unzip the data
+unzip data.zip 
+# move files to desired path
+mv 'Data File'/* .
 
-## Collaborate with your team
+# OPTIONAL: remove unnecessary files
+rm -r 'Data File' data.zip 
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+# How To Use   
+ 
+## Processing
 
-## Test and Deploy
+This preprocessing pipeline allows the user to prepare the datasets to their use in the training pipeline later on. Starting from the original-raw datasets downloaded in `bp_benchmark/datasets/raw/` , the pipeline performs the preprocessing steps of formating and segmentation, cleaning of distorted signals, feature extraction and data splitting for model validation.
 
-Use the built-in continuous integration in GitLab.
+<!-- The `process.py` script is in charge of performing the complete preparation of the datasets. To prepare a specific dataset, run the script with its correspoding configuration file at `--config_file` parameter. All config files can be found in `/bp_benchmark/code/process/core/config`. The following example shows the command for  the preparation of sensors dataset:  -->
+`process.py --config_file [CONFIG PATH]`
+* It performs the complete preparation of the datasets. (segmenting -> cleaning -> splitting)
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/process/core/config`
+```  bash
+# Go to /bp_benchmark/code/process
+cd /bp_benchmark/code/process
+python process.py --config_file core/config/sensors_process.yaml
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+The processed datasets are saved in the directories indicated in the config files of each processing steps at `/bp_benchmark/code/process/core/config`. By default, the datasets are saved under the directory `/bp_benchmark/datasets` in the following structure:
+- `./raw`: gathers the directories with the original data of each dataset (BCG, PPGBP, sensors & UCI).
+- `./segmented`: stores the segmented datasets.
+- `./preprocessed`: keeps the cleaned datasets (signals and features).
+- `./splitted`: stores the splitted data ready for training and validation.
 
-***
+#### Processing's Modules
 
-# Editing this README
+Besides, the code has been modularized to be able to perform each of the data preparation steps independently. There are different three modules:
+- Segmenting module: reads, aligns and segments the raw data according to the config file passed as `--config_file` parameter.
+    - There are one script for each dataset with the name `read_<data-name>.py`.
+    - All config files of segmenting module are in `./core/config/segmentation`
+```  bash
+# In /bp_benchmark/code/process directory
+python read_sensors.py --config_file core/config/segmentation/sensors_read.yaml
+```
+- Preprocessing module: cleans the segmented signals and extracts the PPG's features.
+    - `cleaning.py` is the main script of the module. For PPG-BP dataset, please use `cleaningPPGBP.py`.
+    - Its config files are located in `./core/config/preprocessing`.
+```  bash
+# In /bp_benchmark/code/process directory
+python cleaning.py --config_file core/config/preprocessing/sensors_clean.yaml
+```
+- Splitting module: splits the data according to the validation strategy chosen in the config file of `--config_file` parameter.
+     - `data_splitting.py` is the main script of the module.
+    - All config files are in `./core/config/splitting`. 
+```  bash
+# In /bp_benchmark/code/process directory
+python data_splitting.py --config_file core/config/preprocessing/sensors_clean.yaml
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Training
+`train.py --config_file [CONFIG PATH]`
+* It trains the model with the parameters set in the input config file.
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/train/core/config`
+#### Training Feat2Lab models: 
 
-## Name
-Choose a self-explaining name for your project.
+- All the config files of Feat2Lab approach are in `./core/config/ml/` 
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python train.py --config_file core/config/ml/lgb/lgb_bcg_SP.yaml
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+#### Training Sig2Lab models
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- All the config files of Feat2Lab approach are in `./core/config/dl/resnet/` 
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+```
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python train.py --config_file core/config/dl/resnet/resnet_bcg.yaml
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+#### Training Sig2Sig models
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- All the config files of Feat2Lab approach are in `./core/config/dl/unet/` 
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python train.py --config_file core/config/dl/unet/unet_bcg.yaml
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+The models are save in the path indicated in the config_file (`${path.model_directory}`), by default it will be in `/bp_benchmark/code/train/model-${exp.model_type}`.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## Tuning hyper-parameters with Hydra Optuna
+`tune.py -m`
+- The input of tune.py is the config_file which is assigned in this script. People can edit the config path in the script.
+- The parameter search space is defined in the config_file with Hydra optuna tool.
+- `-m` is the flag to do tune the parameters for multi run, without giving `-m`, it won't tune the parameters in search space, but only run with the paramters set in config_file (`${param_model}`) once.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+#### Tuning Feat2Lab models
+- Edit the config file's path in `tune_ml.py`
+```
+#============== In tune.py ==============#
+# Edit the config file's path in following line:
+@hydra.main(config_path='./core/config/tune/ml', config_name="lgb_sensors_SP")
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+#======= In command line interface ======#
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python tune_ml.py -m
+```
 
-## License
-For open source projects, say how it is licensed.
+#### Tuning Sig2Lab or Sig2Sig models
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Edit the config file's path in `tune.py`
+```
+#============== In tune.py ==============#
+# Edit the config file's path in following line:
+@hydra.main(config_path='./core/config/tune/dl', config_name="resnet_bcg_tune")
+
+#======= In command line interface ======#
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python tune.py -m
+```
+
+## Testing
+`test.py --config_file [CONFIG PATH]`
+* It tests on test set with the trained models specified in the input config file.
+* [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/train/core/config/test`
+
+#### Testing Sig2Lab or Sig2Sig models
+
+- All the config files of Feat2Lab approach are in `./core/config/test/dl/` 
+
+```
+# Go to /bp_benchmark/code/train
+cd /bp_benchmark/code/train
+python test.py --config_file core/config/test/dl/ts_rsnt_bcg.yaml
+```
+
+## Checking results in MLflow
+``` bash
+# Setup mlflow server in background
+
+# Step 1: open a new session with tmux for mlflow
+tmux new -s mlflow
+
+# Step 2: in the new session setup mlflow server
+cd /bp_benchmark/code/train
+mlflow ui -h 0.0.0.0 -p 9181 --backend-store-uri ./mlruns/
+# leave the session with ^B+D
+ 
+# Step 3: forward the port 9181
+ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to working_server] -i [ssh key to working_server]
+
+# Step 4: now you can browse mlflow server in your browser
+# open a new tab in your browser and type http://localhost:9181/
+```
+
+# Copyright Information
+
+This project is under the terms of the [MIT license](https://opensource.org/licenses/mit-license.php) - Copyright (c) 2022 Inventec Corporation. Please reference this repository together with the relevant publication when using the code.
+
+```
+@article{BPbenchmark2023,
+    author   = {González, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
+    note     = {(Inventec Corporation work)},
+    title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
+    journal  = {Scientific Data},
+    year     = {2023},
+    numpages = {19}
+}
+```
