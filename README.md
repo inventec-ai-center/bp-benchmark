@@ -15,20 +15,18 @@ cd bp_benchmark
 #-- Download data 
 mkdir -p ./datasets/splitted
 cd ./datasets/splitted
-# sftp to NAS, download share_mat/* to datasets/splits/
+# download the datasets from Figshare into ./datasets/splitted
 
 #-- Download trained models 
 cd ../..
 mkdir ./models
 cd ./models
-# sftp to NAS, download BP-data-model/* to models/
+# download the models from Figshare into ./ models/
 
 #-- Clone project
 cd ../.. # back to /bp-benchmark
-git clone git@gitlab.com:inventecaicenter/bp-algorithm.git
+git clone https://github.com/inventec-ai-center/bp-benchmark.git
 cd bp-algorithm
-# Go to the branch
-git checkout exp/sensors
 
 #-- Build docker image
 docker build -t bpimage .
@@ -45,7 +43,7 @@ Before running the training pipeline, the user could directly download the prepr
 
 #### Preprocessed datasets
 
-The preprocessed datasets might be found in the [<repo-name>'s website](). They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
+The preprocessed datasets might be found in Figshare. They should be located under the directory `/bp_benchmark/datasets/splitted/` to proceed with the training stage.
 
 ```bash
 mkdir /bp_benchmark/datasets/splitted/
