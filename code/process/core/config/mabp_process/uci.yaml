@@ -1,0 +1,38 @@
+
+# Paths
+path:
+    data: "../../datasets/preprocessed/UCI.pkl" # Path to file with the segmented data
+    save_name: "../../datasets/preprocessed/UCI_mabp.pkl" # File name to save the signal data
+
+# frequency sampling rate of the signals
+fs: 125
+
+# PARAMS
+limit_cycle: 149
+added: 15
+threshold: 1.25
+
+# Parameters for parallelization
+parallel:
+    n_jobs: -1
+    verbose: 0
+   
+# Parameters for splitting
+splitting:
+    # Paths
+    path:
+        processed_df_path: '../../datasets/preprocessed/UCI_mabp.pkl' # Path to file with the processed data (signal or features based dataset)
+        split_df_path: '../../datasets/splitted/UCI_mabp.pkl' # File name to save the splitted data
+        mat_path: '../../datasets/splitted/uci2_dataset/' # Path to directory to save mat files
+         
+    # Parameters for the data splitter
+    param_split:
+        type: "hoo" # "hoo" for Hold-One-Set-Out (for UCI), "cv" for k-fold Cross-Validation (for the rest)
+        fold:  # Number of folds for "cv" method.
+        frac: # fraction of the dataset reserved for tests in "hoo" method. Only applied if is_mix. (0.2 recommended)
+        is_mix: false # If false, all samples of each subject is ensured to be in only one partition. (true is discouraged)
+        random_state: 0
+        ### Parameters for UCI to set the training, validation and test partitions related to the original splitting. 
+        tr_part: ['Part_1', 'Part_2'] 
+        val_part: ['Part_3'] 
+        ts_part: ['Part_4']  

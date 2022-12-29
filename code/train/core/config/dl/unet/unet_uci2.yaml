@@ -1,0 +1,58 @@
+path:
+  model_directory: ./model-${exp.model_type}
+  mlflow_dir: ./mlruns
+exp:
+  fs: 125
+  N_fold: 3
+  random_state: 100
+  model_type: unet1d
+  data_name: uci2
+  exp_name: ${exp.data_name}-${exp.model_type}
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
+  loader: waveform
+  cv: HOO
+param_loader:
+  ppg_norm: loc_z
+  bp_norm: glob_mm
+objective:
+  type: val_mse
+  mode: min
+param_trainer:
+  max_epochs: 100
+  check_val_every_n_epoch: 2
+  progress_bar_refresh_rate: 5
+  gpus: '0'
+  auto_lr_find: true
+  auto_scale_batch_size: binsearch
+param_early_stop:
+  monitor: ${objective.type}
+  min_delta: 0.0
+  patience: 10
+  verbose: true
+  mode: ${objective.mode}
+param_model:
+  N_epoch: 256
+  batch_size: 512
+  lr: 0.001
+  input_size: 1
+  output_size: 625
+  output_channel: 8
+  layers:
+  - 2
+  - 2
+  - 2
+  - 2
+  sample_step: 1
+  loss:
+  - mse
+  - peak_loss
+  loss_w:
+  - 1
+  - 1
+  - 1
+logger:
+  param_ckpt:
+    monitor: ${objective.type}
+    filename: '{epoch:02d}-{${objective.type}:.3f}'
+    save_top_k: 1
+    mode: ${objective.mode}

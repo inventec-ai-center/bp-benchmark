@@ -1,0 +1,28 @@
+path:
+  model_directory: ./model-${exp.model_type}
+  mlflow_dir: ./mlruns
+exp:
+  fs: 125
+  N_fold: 3
+  random_state: 123456
+  model_type: lgb
+  data_name: uci2
+  exp_name: ${exp.data_name}-${exp.model_type}-DP
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
+  feat_importance: ../../feat_importance/${exp.data_name}_dataset/featImportance-DP.pkl
+  loader: feature  # feature, waveform
+  cv: HOO  # cv, HOO
+param_loader:
+  ppg_norm: None  # feat label use norm_data function to normalize
+  bp_norm: None  # norm. of SP and DP, feature input already norm. bp labels
+  label: DP
+  rate_features: 0.05
+param_model:
+  n_estimators: 10
+  max_depth: 8
+  lr: 0.1
+  leaves: 31
+  min_samples: 50
+  subsample: 0.7
+  colsample_bytree: 1.0
+  n_workers: 10

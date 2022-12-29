@@ -1,0 +1,19 @@
+
+# Path to folder of sensors raw data
+data: "../../datasets/raw/sensors/"
+
+# File name to save the data
+save_name: "../../datasets/segmented/sensors.pkl"
+
+# CSV file mapping records to subject id and demographic data.
+# This file is provided in config folder.
+rec2subid: "core/config/segmentation/sensors_rec2subid.csv"
+
+# Window size to segment the signa. 
+# Set either win_sec in seconds or win_sam in samples 
+win_sec: 5 #Window size in seconds
+win_sam: null #Window size in samples
+
+#Original frequency sampling rate
+fs: 125
+

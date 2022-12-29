@@ -1,0 +1,19 @@
+# Path to folder of UCI raw data
+# The expected files in the folder are the original dataset files:
+# Part_1.mat, Part_2.mat, Part_3.mat & Part_4.mat 
+data: "../../datasets/raw/UCI/"
+
+# File name to save the data
+save_name: "../../datasets/segmented/UCI.pkl"
+
+# Window size to segment the signa. 
+# Set either win_sec in seconds or win_sam in samples 
+win_sec: 5 #Window size in seconds
+win_sam: null #Window size in samples
+
+#Waiting window for next segment in seconds
+win_wait: 0 
+
+#Original frequency sampling rate
+fs: 125
+

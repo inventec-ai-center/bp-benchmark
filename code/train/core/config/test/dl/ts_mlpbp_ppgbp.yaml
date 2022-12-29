@@ -1,0 +1,30 @@
+exp:
+  fs: 125
+  N_fold: 5
+  random_state: 100
+  data_name: ppgbp
+  model_type: mlpbp
+  exp_name: ${exp.data_name}-${exp.model_type}
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/signal_fold
+  loader: waveform
+  cv: cv
+param_loader:
+  ppg_norm: loc_mm
+  bp_norm: glob_mm
+param_test:
+  model_path: ../../models/model-${exp.model_type}/${exp.exp_name}-fold
+  save_path: ../../prediction/${exp.data_name}_dataset/${exp.exp_name}.pkl
+param_trainer:
+  gpus: '0'
+param_model:
+  N_epoch: 256
+  batch_size: 32
+  lr: 0.001
+  in_channels: 1
+  num_patch: 262
+  num_classes: 2
+  dim: 128
+  depth: 6
+  token_dim: 512
+  channel_dim: 512
+  dropout: 0.2

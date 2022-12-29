@@ -1,0 +1,23 @@
+path:
+  model_directory: ./model-${exp.model_type}
+  mlflow_dir: ./mlruns
+exp:
+  fs: 125
+  N_fold: 5
+  random_state: 123456
+  model_type: mlp
+  data_name: bcg
+  exp_name: ${exp.data_name}-${exp.model_type}-SP
+  subject_dict: ../../datasets/splitted/${exp.data_name}_dataset/feat_fold
+  feat_importance: ../../feat_importance/${exp.data_name}_dataset/featImportance-SP.pkl
+  loader: feature  # feature, waveform
+  cv: cv  # cv, HOO
+param_loader:
+  ppg_norm: None  # feat label use norm_data function to normalize
+  bp_norm: None  # norm. of SP and DP, feature input already norm. bp labels
+  label:
+  - SP
+  - DP
+  rate_features: 0.05
+param_model:
+  hidden: 64

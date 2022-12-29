@@ -1,0 +1,15 @@
+# Paths
+path:
+    processed_df_path: '../../datasets/preprocessed/BCG.pkl' # Path to file with the processed data (signal or features based dataset)
+    split_df_path: '../../datasets/splitted/BCG.pkl' # File name to save the splitted data
+
+# Parameters for the data splitter
+param_split:
+    type: "cv" # "hoo" for Hold-One-Set-Out (for UCI), "cv" for k-fold Cross-Validation (for the rest)
+    fold: 5 # Number of folds for "cv" method.
+    frac:  # fraction of the dataset reserved for test in "hoo" method.
+    is_mix: false # If false, all samples of each subject is ensured to be in only one partition. (true is discouraged)
+    random_state: 0
+
+
+
