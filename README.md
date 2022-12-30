@@ -287,7 +287,7 @@ This project is under the terms of the [MIT license](https://opensource.org/lice
     note     = {(Inventec Corporation work)},
     title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
     journal  = {Scientific Data},
-    year     = {2023},
-    numpages = {19}
+    year     = {under-revision},
+    numpages = {18}
 }
 ```
