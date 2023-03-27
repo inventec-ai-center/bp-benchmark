@@ -4,6 +4,9 @@ A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation us
 
 Blood Pressure (BP) is an important cardiovascular health indicator. BP is usually monitored noninvasively with a cuff-based device, which can be bulky and inconvenient. Thus, continuous and portable BP monitoring devices, such as those based on a photoplethysmography (PPG) waveform, are desirable. In particular, Machine Learning (ML) based BP estimation approaches have gained considerable attention as they have the potential to estimate intermittent or continuous BP with only a single PPG measurement. Over the last few years, many ML-based BP estimation approaches have been proposed with no agreement on their modeling methodology. To ease the model comparison, we designed a benchmark with four open datasets with shared preprocessing, the right validation strategy avoiding information shift and leak, and standard evaluation metrics. We also adapted Mean Absolute Scaled Error (MASE) to improve the interpretability of model evaluation, especially across different BP datasets. The proposed benchmark comes with open datasets and codes. We showcase its effectiveness by comparing 11 ML-based approaches of three different categories.
 
+Paper (Nature Scientific Data): https://doi.org/10.1038/s41597-023-02020-6 <br >
+Datasets (Figshare): https://doi.org/10.6084/m9.figshare.c.6150390.v1
+
 # Installation
 
 ## Setup environment
@@ -283,11 +286,14 @@ This project is under the terms of the [MIT license](https://opensource.org/lice
 
 ```
 @article{BPbenchmark2023,
-    author   = {González, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
+    author   = {Gonz{\'a}lez, Sergio and Hsieh, Wan-Ting and Chen, Trista Pei-Chun},
     note     = {(Inventec Corporation work)},
-    title    = {A Benchmark for Machine-Learning based Non-Invasive Blood Pressure Estimation using Photoplethysmogram},
+    title    = {A benchmark for machine-learning based non-invasive blood pressure estimation using photoplethysmogram},
     journal  = {Scientific Data},
-    year     = {under-revision},
-    numpages = {18}
+    volume={10},
+    number={1},
+    pages={149},
+    year={2023},
+    publisher={Nature Publishing Group UK London}
 }
 ```
