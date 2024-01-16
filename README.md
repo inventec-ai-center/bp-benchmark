@@ -139,6 +139,7 @@ This preprocessing pipeline allows the user to prepare the datasets to their use
 `process.py --config_file [CONFIG PATH]`
 * It performs the complete preparation of the datasets. (segmenting -> cleaning -> splitting)
 * [CONFIG PATH]: provide the path of a config file, all config files can be found in `/bp_benchmark/code/process/core/config`
+* Note: The preprocessing outcomes are two pickle files, for example, sensors.pkl (waveform data) & sensors_feats.pkl (feature data). These can be used to train the models if the training config files are changed accordingly. Alternatively, one can run share_dataset.py (in code/process) to export the files in mat and CSV format. 
 ```  bash
 # Go to /bp_benchmark/code/process
 cd /bp_benchmark/code/process
