@@ -19,6 +19,7 @@ import numpy as np
 import joblib
 from scipy.io import loadmat, savemat 
 import re
+import os
 
                 
 #datasets = ['PPGBP', 'sensors', 'BCG', 'UCI']
@@ -39,6 +40,8 @@ for dataset in datasets:
         
         #--- to .mat    
         savepath = f"{DATA_PATH}/{dataset0}_dataset/signal_fold_{i}.mat"
+        if not os.path.exists(f"{DATA_PATH}/{dataset0}_dataset"):
+            os.makedirs(f"{DATA_PATH}/{dataset0}_dataset")
         savemat(savepath, ddd)
         
         #--- check if contents are maintained
