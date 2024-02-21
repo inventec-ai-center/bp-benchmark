@@ -15,7 +15,7 @@ mat73==0.52
 pyampd==0.0.1
 
 # logging tool
-mlflow==1.18.0
+mlflow==2.9.2
 
 # DL tool
 torchaudio==0.8.0
