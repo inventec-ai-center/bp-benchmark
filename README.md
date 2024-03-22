@@ -11,29 +11,46 @@ Datasets (Figshare): https://doi.org/10.6084/m9.figshare.c.6150390.v1
 
 ## Setup environment
 ``` bash
-#-- Create folder
+#-- Create folder at your home or preferable directory
+cd ~
 mkdir bp_benchmark
 cd bp_benchmark
 
-#-- Download data 
+#-- Download data (also check Datasets section)
 mkdir -p ./datasets/splitted
 cd ./datasets/splitted
 # download the datasets from Figshare into ./datasets/splitted
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671832
+unzip data.zip 
+# UCI
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671886
+unzip data.zip 
+# BCG 
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671817
+unzip data.zip 
+# PPGBP 
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671826
+unzip data.zip 
 
-#-- Download trained models 
+#-- Download trained models (download the models from Figshare into ./models/)
 cd ../..
+wget -O models.zip https://springernature.figshare.com/ndownloader/files/38671889
+unzip models.zip 
+rm -r models.zip
+
+#-- or Create the folder to save new models
 mkdir ./models
 cd ./models
-# download the models from Figshare into ./ models/
 
 #-- Clone project
-cd ../.. # back to /bp-benchmark
+cd ~/bp_benchmark # back to /bp_benchmark
 git clone https://github.com/inventec-ai-center/bp-benchmark.git
-cd bp-algorithm
+cd bp-benchmark
 
 #-- Build docker image
 docker build -t bpimage .
-docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-algorithm/:/bp_benchmark -v ~/bp_benchmark/datasets/:/bp_benchmark/datasets -v ~/bp_benchmark/models/:/bp_benchmark/models bpimage bash
+docker run --gpus=all --shm-size=65g --name=bp_bm -p 9180-9185:9180-9185 -it -v ~/bp_benchmark/bp-benchmark/:/bp_benchmark -v ~/bp_benchmark/datasets/:/bp_benchmark/datasets -v ~/bp_benchmark/models/:/bp_benchmark/models bpimage bash
+
 
 #-- Quick test the environment
 cd code/train
@@ -56,9 +73,24 @@ cd /bp_benchmark/datasets/splitted/
 wget -O data.zip <link-to-figshare>
 # Unzip the data
 unzip data.zip 
-    
+
 # OPTIONAL: remove unnecessary files
 rm -r data.zip 
+
+# EXAMPLES:
+# sensor
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671832
+unzip data.zip 
+# UCI
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671886
+unzip data.zip 
+# BCG 
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671817
+unzip data.zip 
+# PPGBP 
+wget -O data.zip https://springernature.figshare.com/ndownloader/files/38671826
+unzip data.zip 
+
 ```
 
 #### Raw datasets
