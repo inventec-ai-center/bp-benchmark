@@ -294,6 +294,8 @@ cd /bp_benchmark/code/train
 python test.py --config_file core/config/test/dl/ts_rsnt_bcg.yaml
 ```
 
+Inference's example: [code](https://github.com/inventec-ai-center/bp-benchmark/issues/6#issuecomment-2101986423)
+
 ## Checking results in MLflow
 ``` bash
 # Setup mlflow server in background
