@@ -315,6 +315,37 @@ ssh -N -f -L localhost:9181:localhost:9181 username@working_server -p [port to w
 # open a new tab in your browser and type http://localhost:9181/
 ```
 
+# Features guideline: 
+
+This guideline helps to relate the features used in the Feat2Lab models with the description in the [paper](https://doi.org/10.1038/s41597-023-02020-6). 
+
+- Note: If the same feature is extracted from the different derivatives of the PPG signal, they will have the format `{ppg|vpg|apg|ppg4}_<type_feature>_<number>`.
+    - For example: 
+        - FFT: `ppg_fft_peaks_0`, `ppg_fft_peaks_heights_0`, & `ppg_fft_peaks_neighbor_avgs_0`. (Frequency-based features)
+        - `histogram_down` & `histogram_up`:  Histograms of diastolic and systolic phases, respectively. (Operational)
+        - `max_0` & `min_0`: Location of maximum and minimum of  PPG, VPG, APG, or PPG4 average cycle.
+        - `max_neighbor_mean_0`: Average of the neighbors around the maximum value.
+
+**Frequency-based features**: Most dominant frequency (`ppg_fft_peaks_0`), its magnitude (`ppg_fft_peaks_heights_0`), and the average magnitude nearby it (`ppg_fft_peaks_neighbor_avgs_0`).
+
+**Points-of-interest and time-based features** (paper's Fig. 9): 
+- (1) Amplitudes and (2) Elapsed times (Fig. 9a & 9b).
+    - `Tc`, `Ts`, `Td`: Times of the cycle, systolic phase, and diastolic phase.
+    - `Tsteepest`, `Steepest`, `TNegSteepest`, `NegSteepest`, `TdiaRise`, `DiaRise`, `SteepDiaRise`, `TSystoDiaRise`, `TdiaToEnd`: Times and amplitudes of *w (Steepest)*, *y (NegSteepest)* and *z (DiaRise)* points.
+    - `apg_a`, `apg_b`, `apg_c`, `apg_d`, `apg_e`, `ppg_a`, `ppg_b`, `ppg_c`, `ppg_d`, `ppg_e`: Amplitudes of those points (*a,b,c,d,e*) in APG and PPG.
+    - `T_a`, `T_b`, `T_c`, `T_d`, `T_e`, `T_peak_a`, `T_peak_b`, `T_peak_c`, `T_peak_d`, `T_peak_e`: Times for *a,b,c,d,e* explained in the paper.
+- (3) Areas under the PPG curve (Fig. 9a): `S1`, `S2`, `S3`, `S4`, `AUCsys`, `AUCdia`
+- (4) Widths (Fig. 9c): `SW`, `DW`, their addition (`SWaddDW`), and ratio (`DWdivSW`).
+    
+![Fig 9](https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41597-023-02020-6/MediaObjects/41597_2023_2020_Fig9_HTML.png)
+
+**Operational and statistical features**:
+- (1) Histogram features: Density values of the histogram for systolic phase (`histogram_up`) and diastolic phase (`histogram_down`).
+- (2) Slope Deviation Curve (SDC) features:  `usdc` & `dsdc` (ref. paper [[50](https://www.nature.com/articles/s41597-023-02020-6#ref-CR50)]).
+- (3) SQI features: `SQI_skew`, `SQI_kurtosis`.
+- (4) Indices features (ref. paper [[51](https://www.nature.com/articles/s41597-023-02020-6#ref-CR51)]): `AI`, `bd`, `bcda`, `sdoo`.
+
+
 # Copyright Information
 
 This project is under the terms of the [MIT license](https://opensource.org/licenses/mit-license.php) - Copyright (c) 2022 Inventec Corporation. Please reference this repository together with the relevant publication when using the code.
