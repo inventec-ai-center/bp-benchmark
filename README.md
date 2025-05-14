@@ -112,7 +112,7 @@ mv ABP_PPG/* .
 # OPTIONAL: remove unnecessary files
 rm -r ABP_PPG ABP_PPG.zip 'completed (copy).mat' completed.mat 
 ```
-- UCI dataset might be downloaded from [UCI repository](https://archive.ics.uci.edu/ml/datasets/Cuff-Less+Blood+Pressure+Estimation#).
+- UCI dataset might be downloaded from [UCI repository](https://archive.ics.uci.edu/dataset/340/cuff+less+blood+pressure+estimation).
 ```bash
 mkdir /bp_benchmark/datasets/raw/UCI
 cd /bp_benchmark/datasets/raw/UCI
