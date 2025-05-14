@@ -430,7 +430,7 @@ def apg_points(apg, peak, w, y, z):
     if len(pks_tmp)!=0:
         e = pks_tmp[np.argmax(apg[pks_tmp])]
     else: # max value after y
-        e =  np.argmax(apg[y+1:])
+        e =  np.argmax(apg[y+1:])+y
     pks = pks[pks < e]
     vly = vly[vly < e]
     
