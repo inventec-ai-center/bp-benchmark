@@ -16,7 +16,7 @@ def _print_step(s,cl_log):
     print("--- {} ---".format(s))
     cl_log.write("--- {} ---\n".format(s))
 
-def _compute_quality_idx(df):
+def _compute_quality_idx(df, args):
     df['ppg_p2p'] = df['ppg_pks'].map(np.diff).map(np.median)
     df['ppg_v2v'] = df['ppg_vlys'].map(np.diff).map(np.median)
     
@@ -213,7 +213,7 @@ def main(args):
 
     _print_step("BPM limitation (PPG)",cl_log)
     df = _extract_ppg_cycles(df, args, cl_log)
-    df = _compute_quality_idx(df)
+    df = _compute_quality_idx(df, args)
     df = _limitation_bpm(df, args, cl_log)
     _print_n_samples(df, cl_log)
 
